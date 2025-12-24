@@ -1,21 +1,87 @@
 'use client';
 
-import { useFormContext } from 'react-hook-form';
+import { useFormContext, useWatch } from 'react-hook-form';
+import { IoAmericanFootball, IoBaseball } from 'react-icons/io5';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { CreateContestInput } from '@/features/contests/models/contest';
+import { CreateContestInput, SportType } from '@/features/contests/models/contest';
 import { cn } from '@/utils/cn';
+
+const SPORT_OPTIONS: { value: SportType; label: string; icon: typeof IoAmericanFootball; placeholder: { row: string; col: string } }[] = [
+  {
+    value: 'football',
+    label: 'Football',
+    icon: IoAmericanFootball,
+    placeholder: { row: 'Kansas City Chiefs', col: 'San Francisco 49ers' },
+  },
+  {
+    value: 'baseball',
+    label: 'Baseball',
+    icon: IoBaseball,
+    placeholder: { row: 'New York Yankees', col: 'Los Angeles Dodgers' },
+  },
+];
+
+const SPORT_DESCRIPTIONS: Record<SportType, string> = {
+  football:
+    "Your 10×10 grid will have the row team's last digit of their score on the left axis, and the column team's on the top. Winners are determined by matching the last digit of each team's score at the end of each quarter.",
+  baseball:
+    "Your 10×10 grid will have the row team's last digit of their score on the left axis, and the column team's on the top. Winners are determined by matching the last digit of each team's score at the end of each game in the series.",
+};
 
 export function BasicInfoStep() {
   const {
     register,
     formState: { errors },
+    control,
+    setValue,
   } = useFormContext<CreateContestInput>();
+
+  const sportType = useWatch({ control, name: 'sportType' }) || 'football';
+  const currentSport = SPORT_OPTIONS.find((s) => s.value === sportType) || SPORT_OPTIONS[0];
 
   return (
     <div className="space-y-6">
+      {/* Sport Type Selector */}
+      <div className="space-y-3">
+        <Label className="text-zinc-200">
+          Sport Type <span className="text-orange-500">*</span>
+        </Label>
+        <div className="grid grid-cols-2 gap-3">
+          {SPORT_OPTIONS.map((sport) => {
+            const isSelected = sportType === sport.value;
+            const Icon = sport.icon;
+            return (
+              <button
+                key={sport.value}
+                type="button"
+                onClick={() => setValue('sportType', sport.value, { shouldValidate: true })}
+                className={cn(
+                  'flex items-center gap-3 rounded-lg border-2 p-4 transition-all',
+                  isSelected
+                    ? 'border-orange-500 bg-orange-500/10 text-white'
+                    : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                )}
+              >
+                <div
+                  className={cn(
+                    'flex h-10 w-10 items-center justify-center rounded-full',
+                    isSelected ? 'bg-orange-500' : 'bg-zinc-700'
+                  )}
+                >
+                  <Icon className="h-5 w-5 text-white" />
+                </div>
+                <span className="text-sm font-medium">{sport.label}</span>
+              </button>
+            );
+          })}
+        </div>
+        {/* Hidden input for form registration */}
+        <input type="hidden" {...register('sportType')} />
+      </div>
+
       {/* Contest Name */}
       <div className="space-y-2">
         <Label htmlFor="name" className="text-zinc-200">
@@ -23,16 +89,12 @@ export function BasicInfoStep() {
         </Label>
         <Input
           id="name"
-          placeholder="Super Bowl Squares 2025"
+          placeholder={sportType === 'football' ? 'Super Bowl Squares 2025' : 'World Series Squares 2025'}
           {...register('name')}
           className={cn(errors.name && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
         />
-        {errors.name && (
-          <p className="text-sm text-red-500">{errors.name.message}</p>
-        )}
-        <p className="text-xs text-zinc-500">
-          This is what participants will see when they join your contest.
-        </p>
+        {errors.name && <p className="text-sm text-red-500">{errors.name.message}</p>}
+        <p className="text-xs text-zinc-500">This is what participants will see when they join your contest.</p>
       </div>
 
       {/* Description */}
@@ -46,12 +108,8 @@ export function BasicInfoStep() {
           {...register('description')}
           className={cn(errors.description && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
         />
-        {errors.description && (
-          <p className="text-sm text-red-500">{errors.description.message}</p>
-        )}
-        <p className="text-xs text-zinc-500">
-          Optional. Add context about your fundraiser or organization.
-        </p>
+        {errors.description && <p className="text-sm text-red-500">{errors.description.message}</p>}
+        <p className="text-xs text-zinc-500">Optional. Add context about your fundraiser or organization.</p>
       </div>
 
       {/* Team Names */}
@@ -71,13 +129,11 @@ export function BasicInfoStep() {
             </Label>
             <Input
               id="rowTeamName"
-              placeholder="Kansas City Chiefs"
+              placeholder={currentSport.placeholder.row}
               {...register('rowTeamName')}
               className={cn(errors.rowTeamName && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
             />
-            {errors.rowTeamName && (
-              <p className="text-sm text-red-500">{errors.rowTeamName.message}</p>
-            )}
+            {errors.rowTeamName && <p className="text-sm text-red-500">{errors.rowTeamName.message}</p>}
           </div>
 
           {/* Column Team */}
@@ -87,13 +143,11 @@ export function BasicInfoStep() {
             </Label>
             <Input
               id="colTeamName"
-              placeholder="San Francisco 49ers"
+              placeholder={currentSport.placeholder.col}
               {...register('colTeamName')}
               className={cn(errors.colTeamName && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
             />
-            {errors.colTeamName && (
-              <p className="text-sm text-red-500">{errors.colTeamName.message}</p>
-            )}
+            {errors.colTeamName && <p className="text-sm text-red-500">{errors.colTeamName.message}</p>}
           </div>
         </div>
       </div>
@@ -102,19 +156,18 @@ export function BasicInfoStep() {
       <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
         <div className="flex items-start gap-3">
           <div className="flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full bg-orange-500/20">
-            <span className="text-lg">🏈</span>
+            {sportType === 'football' ? (
+              <IoAmericanFootball className="h-4 w-4 text-orange-400" />
+            ) : (
+              <IoBaseball className="h-4 w-4 text-orange-400" />
+            )}
           </div>
           <div>
             <p className="text-sm font-medium text-zinc-200">How it works</p>
-            <p className="mt-1 text-xs text-zinc-400">
-              Your 10×10 grid will have the row team&apos;s last digit of their score on the left axis,
-              and the column team&apos;s on the top. Winners are determined by matching the last digit
-              of each team&apos;s score at the end of each quarter.
-            </p>
+            <p className="mt-1 text-xs text-zinc-400">{SPORT_DESCRIPTIONS[sportType as SportType]}</p>
           </div>
         </div>
       </div>
     </div>
   );
 }
-

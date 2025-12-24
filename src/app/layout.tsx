@@ -1,7 +1,8 @@
-import { PropsWithChildren } from 'react';
+import { PropsWithChildren, Suspense } from 'react';
 import type { Metadata } from 'next';
 import { Montserrat, Montserrat_Alternates } from 'next/font/google';
 
+import { RouteProgress } from '@/components/shared';
 import { Toaster } from '@/components/ui/toaster';
 import { cn } from '@/utils/cn';
 import { Analytics } from '@vercel/analytics/react';
@@ -30,6 +31,9 @@ export default function RootLayout({ children }: PropsWithChildren) {
   return (
     <html lang='en' className='h-full'>
       <body className={cn('h-full font-sans antialiased', montserrat.variable, montserratAlternates.variable)}>
+        <Suspense fallback={null}>
+          <RouteProgress />
+        </Suspense>
         {children}
         <Toaster />
         <Analytics />

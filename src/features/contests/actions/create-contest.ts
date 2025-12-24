@@ -71,6 +71,8 @@ export async function createContest(input: CreateContestInput): Promise<ActionRe
   const slug = generateSlug(data.name, uniqueId);
 
   // Insert contest into database
+  // Note: sport_type and baseball payout columns require migrations to be applied
+  // TODO: After running migrations, add: sport_type, payout_game_1-7_percent
   const { data: contest, error: insertError } = await supabase
     .from('contests')
     .insert({
@@ -83,6 +85,7 @@ export async function createContest(input: CreateContestInput): Promise<ActionRe
       col_team_name: data.colTeamName,
       square_price: data.squarePrice,
       max_squares_per_person: data.maxSquaresPerPerson || null,
+      // Football payouts
       payout_q1_percent: data.payoutQ1Percent,
       payout_q2_percent: data.payoutQ2Percent,
       payout_q3_percent: data.payoutQ3Percent,

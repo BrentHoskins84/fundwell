@@ -29,8 +29,24 @@ const STEPS = [
 
 // Fields to validate per step
 const STEP_FIELDS: Record<number, string[]> = {
-  1: ['name', 'description', 'rowTeamName', 'colTeamName'],
-  2: ['squarePrice', 'maxSquaresPerPerson', 'payoutQ1Percent', 'payoutQ2Percent', 'payoutQ3Percent', 'payoutFinalPercent'],
+  1: ['sportType', 'name', 'description', 'rowTeamName', 'colTeamName'],
+  2: [
+    'squarePrice',
+    'maxSquaresPerPerson',
+    // Football payouts
+    'payoutQ1Percent',
+    'payoutQ2Percent',
+    'payoutQ3Percent',
+    'payoutFinalPercent',
+    // Baseball payouts
+    'payoutGame1Percent',
+    'payoutGame2Percent',
+    'payoutGame3Percent',
+    'payoutGame4Percent',
+    'payoutGame5Percent',
+    'payoutGame6Percent',
+    'payoutGame7Percent',
+  ],
   3: ['heroImageUrl', 'orgImageUrl', 'primaryColor', 'secondaryColor'],
 };
 

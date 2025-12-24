@@ -1,7 +1,12 @@
 import { z } from 'zod';
 
+// Sport type enum
+export const sportTypes = ['football', 'baseball'] as const;
+export type SportType = (typeof sportTypes)[number];
+
 // Schema for Step 1 - Basic Info
 export const basicInfoSchema = z.object({
+  sportType: z.enum(sportTypes),
   name: z
     .string()
     .min(3, 'Contest name must be at least 3 characters')
@@ -14,26 +19,28 @@ export const basicInfoSchema = z.object({
 // Base settings schema (without refine, for merging)
 export const settingsBaseSchema = z.object({
   squarePrice: z.coerce.number().min(1, 'Price must be at least $1').max(10000, 'Price must be less than $10,000'),
-  maxSquaresPerPerson: z.coerce
-    .number()
-    .min(1, 'Must allow at least 1 square per person')
-    .max(100, 'Cannot exceed 100 squares per person')
-    .optional()
+  maxSquaresPerPerson: z
+    .union([z.literal(''), z.coerce.number().min(1, 'Must be at least 1').max(100, 'Cannot exceed 100 squares')])
+    .transform((val) => (val === '' || val === 0 ? null : val))
     .nullable(),
+  // Football payouts
   payoutQ1Percent: z.coerce.number().min(0).max(100),
   payoutQ2Percent: z.coerce.number().min(0).max(100),
   payoutQ3Percent: z.coerce.number().min(0).max(100),
   payoutFinalPercent: z.coerce.number().min(0).max(100),
+  // Baseball payouts
+  payoutGame1Percent: z.coerce.number().min(0).max(100),
+  payoutGame2Percent: z.coerce.number().min(0).max(100),
+  payoutGame3Percent: z.coerce.number().min(0).max(100),
+  payoutGame4Percent: z.coerce.number().min(0).max(100),
+  payoutGame5Percent: z.coerce.number().min(0).max(100),
+  payoutGame6Percent: z.coerce.number().min(0).max(100),
+  payoutGame7Percent: z.coerce.number().min(0).max(100),
 });
 
 // Settings schema with validation (for step validation)
-export const settingsSchema = settingsBaseSchema.refine(
-  (data) => data.payoutQ1Percent + data.payoutQ2Percent + data.payoutQ3Percent + data.payoutFinalPercent <= 100,
-  {
-    message: 'Total payout cannot exceed 100%',
-    path: ['payoutFinalPercent'],
-  }
-);
+// Note: Sport-specific validation is handled in the UI since we need sportType from basicInfoSchema
+export const settingsSchema = settingsBaseSchema;
 
 // Schema for Step 3 - Branding
 export const brandingSchema = z.object({
@@ -43,17 +50,36 @@ export const brandingSchema = z.object({
   secondaryColor: z.string().regex(/^#[0-9A-Fa-f]{6}$/, 'Must be a valid hex color'),
 });
 
+// Helper to calculate total payout based on sport type
+export function calculateTotalPayout(data: { sportType: SportType } & Record<string, unknown>): number {
+  if (data.sportType === 'football') {
+    return (
+      (Number(data.payoutQ1Percent) || 0) +
+      (Number(data.payoutQ2Percent) || 0) +
+      (Number(data.payoutQ3Percent) || 0) +
+      (Number(data.payoutFinalPercent) || 0)
+    );
+  } else {
+    return (
+      (Number(data.payoutGame1Percent) || 0) +
+      (Number(data.payoutGame2Percent) || 0) +
+      (Number(data.payoutGame3Percent) || 0) +
+      (Number(data.payoutGame4Percent) || 0) +
+      (Number(data.payoutGame5Percent) || 0) +
+      (Number(data.payoutGame6Percent) || 0) +
+      (Number(data.payoutGame7Percent) || 0)
+    );
+  }
+}
+
 // Combined schema for full contest creation (with payout validation)
 export const createContestSchema = basicInfoSchema
   .merge(settingsBaseSchema)
   .merge(brandingSchema)
-  .refine(
-    (data) => data.payoutQ1Percent + data.payoutQ2Percent + data.payoutQ3Percent + data.payoutFinalPercent <= 100,
-    {
-      message: 'Total payout cannot exceed 100%',
-      path: ['payoutFinalPercent'],
-    }
-  );
+  .refine((data) => calculateTotalPayout(data) <= 100, {
+    message: 'Total payout cannot exceed 100%',
+    path: ['payoutFinalPercent'],
+  });
 
 // Type exports
 export type BasicInfoInput = z.infer<typeof basicInfoSchema>;
@@ -63,16 +89,26 @@ export type CreateContestInput = z.infer<typeof createContestSchema>;
 
 // Default values for the form
 export const defaultContestValues: CreateContestInput = {
+  sportType: 'football',
   name: '',
   description: '',
   rowTeamName: '',
   colTeamName: '',
   squarePrice: 10,
   maxSquaresPerPerson: null,
-  payoutQ1Percent: 20,
-  payoutQ2Percent: 20,
-  payoutQ3Percent: 20,
-  payoutFinalPercent: 40,
+  // Football defaults
+  payoutQ1Percent: 10,
+  payoutQ2Percent: 10,
+  payoutQ3Percent: 10,
+  payoutFinalPercent: 20,
+  // Baseball defaults
+  payoutGame1Percent: 10,
+  payoutGame2Percent: 10,
+  payoutGame3Percent: 10,
+  payoutGame4Percent: 10,
+  payoutGame5Percent: 15,
+  payoutGame6Percent: 15,
+  payoutGame7Percent: 30,
   heroImageUrl: null,
   orgImageUrl: null,
   primaryColor: '#F97316',

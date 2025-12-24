@@ -1,0 +1,57 @@
+'use client';
+
+import { useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { IoPlay } from 'react-icons/io5';
+
+import { Button } from '@/components/ui/button';
+import { useToast } from '@/components/ui/use-toast';
+
+import { openContest } from './actions';
+
+interface OpenContestButtonProps {
+  contestId: string;
+}
+
+export function OpenContestButton({ contestId }: OpenContestButtonProps) {
+  const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const router = useRouter();
+
+  async function handleOpen() {
+    setIsLoading(true);
+    try {
+      const result = await openContest(contestId);
+
+      if (result.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: result.error.message,
+        });
+      } else {
+        toast({
+          title: 'Contest Opened!',
+          description: 'Your contest is now open for participants to claim squares.',
+        });
+        router.refresh();
+      }
+    } catch (error) {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'Something went wrong. Please try again.',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  return (
+    <Button variant="orange" onClick={handleOpen} disabled={isLoading}>
+      <IoPlay className="mr-2 h-4 w-4" />
+      {isLoading ? 'Opening...' : 'Open Contest'}
+    </Button>
+  );
+}
+

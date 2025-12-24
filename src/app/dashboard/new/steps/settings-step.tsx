@@ -4,14 +4,41 @@ import { useFormContext, useWatch } from 'react-hook-form';
 
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { CreateContestInput } from '@/features/contests/models/contest';
+import { CreateContestInput, SportType } from '@/features/contests/models/contest';
 import { cn } from '@/utils/cn';
 
-const PAYOUT_FIELDS = [
+type PayoutField = {
+  name: keyof CreateContestInput;
+  label: string;
+  color: string;
+};
+
+const FOOTBALL_PAYOUT_FIELDS: PayoutField[] = [
   { name: 'payoutQ1Percent', label: 'Q1', color: 'bg-amber-500' },
   { name: 'payoutQ2Percent', label: 'Halftime', color: 'bg-orange-500' },
   { name: 'payoutQ3Percent', label: 'Q3', color: 'bg-red-500' },
   { name: 'payoutFinalPercent', label: 'Final', color: 'bg-rose-600' },
+];
+
+const BASEBALL_PAYOUT_FIELDS: PayoutField[] = [
+  { name: 'payoutGame1Percent', label: 'Game 1', color: 'bg-blue-500' },
+  { name: 'payoutGame2Percent', label: 'Game 2', color: 'bg-blue-600' },
+  { name: 'payoutGame3Percent', label: 'Game 3', color: 'bg-indigo-500' },
+  { name: 'payoutGame4Percent', label: 'Game 4', color: 'bg-indigo-600' },
+  { name: 'payoutGame5Percent', label: 'Game 5', color: 'bg-violet-500' },
+  { name: 'payoutGame6Percent', label: 'Game 6', color: 'bg-violet-600' },
+  { name: 'payoutGame7Percent', label: 'Game 7', color: 'bg-purple-600' },
+];
+
+const FOOTBALL_PAYOUT_NAMES = ['payoutQ1Percent', 'payoutQ2Percent', 'payoutQ3Percent', 'payoutFinalPercent'] as const;
+const BASEBALL_PAYOUT_NAMES = [
+  'payoutGame1Percent',
+  'payoutGame2Percent',
+  'payoutGame3Percent',
+  'payoutGame4Percent',
+  'payoutGame5Percent',
+  'payoutGame6Percent',
+  'payoutGame7Percent',
 ] as const;
 
 export function SettingsStep() {
@@ -21,15 +48,18 @@ export function SettingsStep() {
     control,
   } = useFormContext<CreateContestInput>();
 
-  // Watch payout values for the visual indicator
-  const payoutValues = useWatch({
-    control,
-    name: ['payoutQ1Percent', 'payoutQ2Percent', 'payoutQ3Percent', 'payoutFinalPercent'],
-  });
-
+  const sportType = useWatch({ control, name: 'sportType' }) as SportType;
   const squarePrice = useWatch({ control, name: 'squarePrice' });
 
-  const totalPayout = payoutValues.reduce((sum, val) => sum + (Number(val) || 0), 0);
+  // Watch all payout values
+  const footballPayouts = useWatch({ control, name: FOOTBALL_PAYOUT_NAMES as unknown as (keyof CreateContestInput)[] });
+  const baseballPayouts = useWatch({ control, name: BASEBALL_PAYOUT_NAMES as unknown as (keyof CreateContestInput)[] });
+
+  const isFootball = sportType === 'football';
+  const payoutFields = isFootball ? FOOTBALL_PAYOUT_FIELDS : BASEBALL_PAYOUT_FIELDS;
+  const payoutValues = isFootball ? footballPayouts : baseballPayouts;
+
+  const totalPayout = (payoutValues as (number | undefined)[]).reduce((sum, val) => (sum ?? 0) + (Number(val) || 0), 0) ?? 0;
   const totalPot = (Number(squarePrice) || 0) * 100;
 
   return (
@@ -48,15 +78,10 @@ export function SettingsStep() {
             step="1"
             placeholder="10"
             {...register('squarePrice')}
-            className={cn(
-              'pl-7',
-              errors.squarePrice && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-            )}
+            className={cn('pl-7', errors.squarePrice && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
           />
         </div>
-        {errors.squarePrice && (
-          <p className="text-sm text-red-500">{errors.squarePrice.message}</p>
-        )}
+        {errors.squarePrice && <p className="text-sm text-red-500">{errors.squarePrice.message}</p>}
         {totalPot > 0 && (
           <p className="text-xs text-zinc-500">
             Total pot if all squares sell: <span className="font-medium text-orange-400">${totalPot.toLocaleString()}</span>
@@ -76,16 +101,10 @@ export function SettingsStep() {
           max="100"
           placeholder="No limit"
           {...register('maxSquaresPerPerson')}
-          className={cn(
-            errors.maxSquaresPerPerson && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-          )}
+          className={cn(errors.maxSquaresPerPerson && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
         />
-        {errors.maxSquaresPerPerson && (
-          <p className="text-sm text-red-500">{errors.maxSquaresPerPerson.message}</p>
-        )}
-        <p className="text-xs text-zinc-500">
-          Leave blank to allow unlimited squares per participant.
-        </p>
+        {errors.maxSquaresPerPerson && <p className="text-sm text-red-500">{errors.maxSquaresPerPerson.message}</p>}
+        <p className="text-xs text-zinc-500">Leave blank to allow unlimited squares per participant.</p>
       </div>
 
       {/* Payout Distribution */}
@@ -93,14 +112,21 @@ export function SettingsStep() {
         <div>
           <Label className="text-zinc-200">Payout Distribution</Label>
           <p className="text-xs text-zinc-500">
-            How winnings are split between quarters. The rest goes to your fundraiser.
+            {isFootball
+              ? 'How winnings are split between quarters. The rest goes to your fundraiser.'
+              : 'How winnings are split between games. The rest goes to your fundraiser.'}
           </p>
+          {!isFootball && (
+            <p className="mt-1 text-xs text-amber-400">
+              💡 If the series ends early, remaining game payouts go to the fundraiser.
+            </p>
+          )}
         </div>
 
         {/* Visual Progress Bar */}
         <div className="h-4 overflow-hidden rounded-full bg-zinc-800">
           <div className="flex h-full">
-            {PAYOUT_FIELDS.map((field, index) => {
+            {payoutFields.map((field, index) => {
               const value = Number(payoutValues[index]) || 0;
               return (
                 <div
@@ -114,10 +140,10 @@ export function SettingsStep() {
         </div>
 
         {/* Payout Inputs */}
-        <div className="grid grid-cols-2 gap-4 sm:grid-cols-4">
-          {PAYOUT_FIELDS.map((field) => (
+        <div className={cn('grid gap-4', isFootball ? 'grid-cols-2 sm:grid-cols-4' : 'grid-cols-2 sm:grid-cols-4 lg:grid-cols-7')}>
+          {payoutFields.map((field) => (
             <div key={field.name} className="space-y-2">
-              <Label htmlFor={field.name} className="text-zinc-200">
+              <Label htmlFor={field.name} className="text-zinc-200 text-xs">
                 {field.label}
               </Label>
               <div className="relative">
@@ -127,10 +153,7 @@ export function SettingsStep() {
                   min="0"
                   max="100"
                   {...register(field.name)}
-                  className={cn(
-                    'pr-7',
-                    errors[field.name] && 'border-red-500 focus:border-red-500 focus:ring-red-500'
-                  )}
+                  className={cn('pr-7', errors[field.name] && 'border-red-500 focus:border-red-500 focus:ring-red-500')}
                 />
                 <span className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400">%</span>
               </div>
@@ -142,9 +165,7 @@ export function SettingsStep() {
         <div
           className={cn(
             'flex items-center justify-between rounded-lg border p-3',
-            totalPayout <= 100
-              ? 'border-green-500/50 bg-green-500/10'
-              : 'border-red-500/50 bg-red-500/10'
+            totalPayout <= 100 ? 'border-green-500/50 bg-green-500/10' : 'border-red-500/50 bg-red-500/10'
           )}
         >
           <span className={cn('text-sm', totalPayout <= 100 ? 'text-green-400' : 'text-red-400')}>
@@ -153,31 +174,28 @@ export function SettingsStep() {
           {totalPayout <= 100 ? (
             <span className="text-xs text-green-400">✓ Valid ({100 - totalPayout}% to fundraiser)</span>
           ) : (
-            <span className="text-xs text-red-400">
-              {totalPayout - 100}% over limit
-            </span>
+            <span className="text-xs text-red-400">{totalPayout - 100}% over limit</span>
           )}
         </div>
 
-        {errors.payoutFinalPercent && (
-          <p className="text-sm text-red-500">{errors.payoutFinalPercent.message}</p>
-        )}
+        {errors.payoutFinalPercent && <p className="text-sm text-red-500">{errors.payoutFinalPercent.message}</p>}
+        {errors.payoutGame7Percent && <p className="text-sm text-red-500">{errors.payoutGame7Percent.message}</p>}
       </div>
 
       {/* Payout Breakdown */}
       {totalPot > 0 && totalPayout <= 100 && (
         <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
           <p className="mb-4 text-sm font-medium text-zinc-200">Payout Breakdown</p>
-          
+
           {/* Total Pot */}
           <div className="mb-4 flex items-center justify-between border-b border-zinc-700 pb-3">
             <span className="text-sm text-zinc-400">Total Pot (100 squares × ${Number(squarePrice).toLocaleString()})</span>
             <span className="text-lg font-semibold text-white">${totalPot.toLocaleString()}</span>
           </div>
-          
-          {/* Quarter Payouts */}
+
+          {/* Payouts by quarter/game */}
           <div className="space-y-2">
-            {PAYOUT_FIELDS.map((field, index) => {
+            {payoutFields.map((field, index) => {
               const percent = Number(payoutValues[index]) || 0;
               const amount = (totalPot * percent) / 100;
               return (
@@ -190,18 +208,16 @@ export function SettingsStep() {
               );
             })}
           </div>
-          
+
           {/* Total Payouts */}
           <div className="mt-3 flex items-center justify-between border-t border-zinc-700 pt-3">
             <span className="text-sm text-zinc-400">Total Payouts ({totalPayout}%)</span>
             <span className="font-medium text-orange-400">${((totalPot * totalPayout) / 100).toLocaleString()}</span>
           </div>
-          
+
           {/* Fundraiser Keeps */}
           <div className="mt-2 flex items-center justify-between rounded-lg bg-green-500/10 p-3">
-            <span className="text-sm font-medium text-green-400">
-              🎉 Fundraiser Keeps ({100 - totalPayout}%)
-            </span>
+            <span className="text-sm font-medium text-green-400">🎉 Fundraiser Keeps ({100 - totalPayout}%)</span>
             <span className="text-lg font-bold text-green-400">
               ${((totalPot * (100 - totalPayout)) / 100).toLocaleString()}
             </span>
@@ -211,4 +227,3 @@ export function SettingsStep() {
     </div>
   );
 }
-

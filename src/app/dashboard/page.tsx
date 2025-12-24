@@ -2,8 +2,88 @@ import Link from 'next/link';
 import { IoAddCircleOutline } from 'react-icons/io5';
 
 import { Button } from '@/components/ui/button';
+import { ContestCard } from '@/features/contests/components/contest-card';
+import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 
-export default function DashboardPage() {
+function ContestCardSkeleton() {
+  return (
+    <div className="animate-pulse rounded-xl border border-zinc-800 bg-zinc-800/50 p-6">
+      <div className="flex items-start justify-between gap-3 mb-3">
+        <div className="flex items-center gap-2">
+          <div className="h-9 w-9 rounded-lg bg-zinc-700" />
+          <div className="h-5 w-32 rounded bg-zinc-700" />
+        </div>
+        <div className="h-5 w-16 rounded-full bg-zinc-700" />
+      </div>
+      <div className="h-4 w-40 rounded bg-zinc-700/50 mb-4" />
+      <div className="border-t border-zinc-700/50 pt-3 flex items-center justify-between">
+        <div className="flex items-center gap-4">
+          <div className="h-4 w-12 rounded bg-zinc-700/50" />
+          <div className="h-4 w-16 rounded bg-zinc-700/50" />
+        </div>
+        <div className="h-3 w-20 rounded bg-zinc-700/50" />
+      </div>
+    </div>
+  );
+}
+
+function EmptyState() {
+  return (
+    <div className="rounded-lg border border-zinc-800 bg-zinc-800/50 p-8 text-center">
+      <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-700/50">
+        <IoAddCircleOutline className="h-8 w-8 text-zinc-400" />
+      </div>
+      <p className="text-zinc-400">You haven&apos;t created any contests yet.</p>
+      <p className="mt-2 text-sm text-zinc-500">
+        Create your first game day squares contest to get started!
+      </p>
+      <Button variant="orange" asChild className="mt-6">
+        <Link href="/dashboard/new">Create Your First Contest</Link>
+      </Button>
+    </div>
+  );
+}
+
+function LoadingState() {
+  return (
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      {[...Array(6)].map((_, i) => (
+        <ContestCardSkeleton key={i} />
+      ))}
+    </div>
+  );
+}
+
+export default async function DashboardPage() {
+  const supabase = await createSupabaseServerClient();
+
+  // Get the current user
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    return null;
+  }
+
+  // Fetch contests with claimed squares count
+  const { data: contests, error } = await supabase
+    .from('contests')
+    .select(`
+      *,
+      squares(payment_status)
+    `)
+    .eq('owner_id', user.id)
+    .order('created_at', { ascending: false });
+
+  // Calculate claimed counts for each contest
+  const contestsWithCounts = contests?.map((contest) => {
+    const claimedCount = contest.squares?.filter(
+      (sq: { payment_status: string }) => sq.payment_status !== 'available'
+    ).length ?? 0;
+    return { ...contest, claimedCount };
+  });
+
   return (
     <div>
       <div className="mb-6 flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
@@ -15,19 +95,24 @@ export default function DashboardPage() {
           </Link>
         </Button>
       </div>
-      <div className="rounded-lg border border-zinc-800 bg-zinc-800/50 p-8 text-center">
-        <div className="mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-full bg-zinc-700/50">
-          <IoAddCircleOutline className="h-8 w-8 text-zinc-400" />
+
+      {error ? (
+        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
+          Failed to load contests. Please try again.
         </div>
-        <p className="text-zinc-400">You haven&apos;t created any contests yet.</p>
-        <p className="mt-2 text-sm text-zinc-500">
-          Create your first game day squares contest to get started!
-        </p>
-        <Button variant="orange" asChild className="mt-6">
-          <Link href="/dashboard/new">Create Your First Contest</Link>
-        </Button>
-      </div>
+      ) : !contestsWithCounts || contestsWithCounts.length === 0 ? (
+        <EmptyState />
+      ) : (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          {contestsWithCounts.map((contest) => (
+            <ContestCard
+              key={contest.id}
+              contest={contest}
+              claimedCount={contest.claimedCount}
+            />
+          ))}
+        </div>
+      )}
     </div>
   );
 }
-
