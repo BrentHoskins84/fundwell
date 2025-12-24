@@ -8,9 +8,9 @@
 
 ## In Progress
 
-- [ ] Update Tailwind config with Griddo colors
-- [ ] Update landing page copy and branding
-- [ ] Add contest database migration
+- [x] Update Tailwind config with Griddo colors
+- [x] Update landing page copy and branding
+- [x] Add contest database migration
 
 ## Next Up
 
