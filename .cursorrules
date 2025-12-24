@@ -1,0 +1,52 @@
+# Griddo Project
+
+## What is Griddo?
+
+Griddo is a game day squares fundraiser platform. Organizations create contests (Super Bowl, World Series, etc.), participants claim squares on a 10x10 grid, and managers track payments and announce winners.
+
+## Tech Stack
+
+- Next.js 15 (App Router)
+- TypeScript
+- Supabase (Auth, PostgreSQL, Storage, Realtime)
+- Stripe (Subscriptions only - not for square payments)
+- Tailwind CSS + shadcn/ui
+- TanStack Query (server state)
+- React Hook Form + Zod (forms)
+- Resend (email)
+
+## Brand Colors
+
+- Primary: #F97316 (orange-500)
+- Secondary: #D97706 (amber-600)
+- Accent: #FBBF24 (amber-400)
+- Background: #18181B (zinc-900)
+- Surface: #27272A (zinc-800)
+
+## Code Patterns
+
+- Server Actions for mutations (not API routes)
+- TanStack Query for data fetching
+- Zod schemas for all validation
+- Feature-based folder structure: `src/features/[name]/`
+- Supabase RLS for all database security
+
+## Key Entities
+
+- User: Contest managers (authenticated)
+- Contest: A fundraiser with branding, settings, payment options
+- Square: One of 100 squares (10x10) in a contest
+- Score: Quarter scores entered by manager
+- PaymentOption: Venmo/PayPal/etc links for a contest
+
+## File Locations
+
+- Pages: `src/app/`
+- Features: `src/features/`
+- Shared components: `src/components/`
+- Supabase clients: `src/libs/supabase/`
+- Database migrations: `supabase/migrations/`
+
+## Reference Docs
+
+See `/docs` folder for full planning documents.
