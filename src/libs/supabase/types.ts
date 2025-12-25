@@ -21,6 +21,7 @@ export type Database = {
           col_numbers: number[] | null
           col_team_name: string
           created_at: string
+          deleted_at: string | null
           description: string | null
           hero_image_url: string | null
           id: string
@@ -57,6 +58,7 @@ export type Database = {
           col_numbers?: number[] | null
           col_team_name: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           hero_image_url?: string | null
           id?: string
@@ -93,6 +95,7 @@ export type Database = {
           col_numbers?: number[] | null
           col_team_name?: string
           created_at?: string
+          deleted_at?: string | null
           description?: string | null
           hero_image_url?: string | null
           id?: string
