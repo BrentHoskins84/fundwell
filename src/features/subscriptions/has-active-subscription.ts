@@ -5,15 +5,15 @@ import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-clie
 /**
  * Returns true if the given owner has an active or trialing subscription.
  */
-export async function hasActiveSubscription(ownerId: string | null): Promise<boolean> {
-  if (!ownerId) return false;
+export async function hasActiveSubscription(userId: string | null): Promise<boolean> {
+  if (!userId) return false;
 
   const supabase = await createSupabaseServerClient();
 
   const { count } = await supabase
     .from('subscriptions')
     .select('id', { count: 'exact', head: true })
-    .eq('owner_id', ownerId)
+    .eq('user_id', userId)
     .in('status', ['active', 'trialing']);
 
   return Boolean(count && count > 0);
