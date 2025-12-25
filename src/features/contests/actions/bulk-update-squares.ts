@@ -26,7 +26,7 @@ export async function bulkUpdateSquares({
     } = await supabase.auth.getUser();
 
     if (!user) {
-      return { error: { message: 'Unauthorized' } };
+      return { data: null, error: { message: 'Unauthorized' } };
     }
 
     // Verify contest ownership
@@ -38,11 +38,11 @@ export async function bulkUpdateSquares({
       .single();
 
     if (contestError || !contest) {
-      return { error: { message: 'Contest not found or access denied' } };
+      return { data: null, error: { message: 'Contest not found or access denied' } };
     }
 
     if (squareIds.length === 0) {
-      return { error: { message: 'No squares selected' } };
+      return { data: null, error: { message: 'No squares selected' } };
     }
 
     // Build update data based on new status
@@ -68,12 +68,11 @@ export async function bulkUpdateSquares({
       .in('id', squareIds);
 
     if (updateError) {
-      return { error: { message: `Failed to update squares: ${updateError.message}` } };
+      return { data: null, error: { message: `Failed to update squares: ${updateError.message}` } };
     }
 
-    return { data: { updated: count ?? squareIds.length } };
+    return { data: { updated: count ?? squareIds.length }, error: null };
   } catch (error) {
-    return { error: { message: 'An unexpected error occurred' } };
+    return { data: null, error: { message: 'An unexpected error occurred' } };
   }
 }
-

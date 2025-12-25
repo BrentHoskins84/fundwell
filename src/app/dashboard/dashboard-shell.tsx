@@ -19,9 +19,13 @@ import { cn } from '@/utils/cn';
 
 import { NavItems } from './nav-items';
 
+async function handleSignOut() {
+  await signOut();
+}
+
 function LogoutButton({ onClick, className }: { onClick?: () => void; className?: string }) {
   return (
-    <form action={signOut}>
+    <form action={handleSignOut}>
       <button
         type='submit'
         onClick={onClick}
@@ -131,7 +135,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className='bg-zinc-700' />
                 <DropdownMenuItem asChild className='cursor-pointer p-0 text-zinc-300 focus:bg-zinc-700 focus:text-white'>
-                  <form action={signOut} className='w-full'>
+                  <form action={handleSignOut} className='w-full'>
                     <button type='submit' className='w-full px-2 py-1.5 text-left'>
                       Log out
                     </button>

@@ -14,11 +14,11 @@ export interface Square {
   claimant_last_name: string | null;
 }
 
-interface SquaresGridProps {
-  squares: Square[];
+interface SquaresGridProps<T extends Square = Square> {
+  squares: T[];
   rowTeamName: string;
   colTeamName: string;
-  onSquareClick?: (square: Square) => void;
+  onSquareClick?: (square: T) => void;
   disabled?: boolean;
   showNumbers?: boolean;
   rowNumbers?: number[] | null;
@@ -48,7 +48,7 @@ function getSquareTooltip(square: Square): string {
   return `${name} (${status})`;
 }
 
-export function SquaresGrid({
+export function SquaresGrid<T extends Square = Square>({
   squares,
   rowTeamName,
   colTeamName,
@@ -58,14 +58,14 @@ export function SquaresGrid({
   rowNumbers,
   colNumbers,
   winningSquareIds = [],
-}: SquaresGridProps) {
+}: SquaresGridProps<T>) {
   // Use provided numbers or default to 0-9
   const displayRowNumbers = rowNumbers ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const displayColNumbers = colNumbers ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const hasAssignedNumbers = rowNumbers !== null && rowNumbers !== undefined;
   
   // Create 10x10 grid from squares array
-  const grid: (Square | null)[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
+  const grid: (T | null)[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
   squares.forEach((square) => {
     if (square.row_index >= 0 && square.row_index <= 9 && square.col_index >= 0 && square.col_index <= 9) {
       grid[square.row_index][square.col_index] = square;

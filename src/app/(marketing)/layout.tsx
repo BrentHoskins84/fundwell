@@ -26,5 +26,3 @@ async function AppBar() {
   );
 }
 
-export { MarketingFooter };
-

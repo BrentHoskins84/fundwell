@@ -2,7 +2,7 @@
 
 import { useTransition } from 'react';
 import { Loader2 } from 'lucide-react';
-import { useForm } from 'react-hook-form';
+import { type Resolver,useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
@@ -17,14 +17,13 @@ import { zodResolver } from '@hookform/resolvers/zod';
 type Contest = Database['public']['Tables']['contests']['Row'];
 
 // Base schema for pricing
-const baseSchema = {
+const baseSchema = z.object({
   square_price: z.coerce.number().min(1, 'Price must be at least $1'),
   max_squares_per_person: z.coerce.number().min(1).max(100).nullable(),
-};
+});
 
 // Football payout schema
-const footballPayoutSchema = z.object({
-  ...baseSchema,
+const footballPayoutSchema = baseSchema.extend({
   payout_q1_percent: z.coerce.number().min(0).max(100),
   payout_q2_percent: z.coerce.number().min(0).max(100),
   payout_q3_percent: z.coerce.number().min(0).max(100),
@@ -38,8 +37,7 @@ const footballPayoutSchema = z.object({
 );
 
 // Baseball payout schema
-const baseballPayoutSchema = z.object({
-  ...baseSchema,
+const baseballPayoutSchema = baseSchema.extend({
   payout_game1_percent: z.coerce.number().min(0).max(100),
   payout_game2_percent: z.coerce.number().min(0).max(100),
   payout_game3_percent: z.coerce.number().min(0).max(100),
@@ -83,7 +81,7 @@ function FootballPayoutsForm({ contest }: { contest: Contest }) {
     watch,
     formState: { errors, isDirty },
   } = useForm<FootballFormData>({
-    resolver: zodResolver(footballPayoutSchema),
+    resolver: zodResolver(footballPayoutSchema) as Resolver<FootballFormData>,
     defaultValues: {
       square_price: contest.square_price,
       max_squares_per_person: contest.max_squares_per_person,
@@ -265,7 +263,7 @@ function BaseballPayoutsForm({ contest }: { contest: Contest }) {
     watch,
     formState: { errors, isDirty },
   } = useForm<BaseballFormData>({
-    resolver: zodResolver(baseballPayoutSchema),
+    resolver: zodResolver(baseballPayoutSchema) as Resolver<BaseballFormData>,
     defaultValues: {
       square_price: contest.square_price,
       max_squares_per_person: contest.max_squares_per_person,

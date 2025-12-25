@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { FormProvider,useForm } from 'react-hook-form';
 import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
+import { FormProvider,useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

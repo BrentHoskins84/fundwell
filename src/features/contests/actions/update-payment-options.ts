@@ -1,8 +1,8 @@
 'use server';
 
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
-import { ActionResponse } from '@/types/action-response';
 import { Database } from '@/libs/supabase/types';
+import { ActionResponse } from '@/types/action-response';
 
 type PaymentOptionInsert = Database['public']['Tables']['payment_options']['Insert'];
 type PaymentOptionType = Database['public']['Enums']['payment_option_type'];
@@ -51,10 +51,7 @@ export async function updatePaymentOptions(
   }
 
   // Delete all existing payment options for this contest
-  const { error: deleteError } = await supabase
-    .from('payment_options')
-    .delete()
-    .eq('contest_id', contestId);
+  const { error: deleteError } = await supabase.from('payment_options').delete().eq('contest_id', contestId);
 
   if (deleteError) {
     return { data: null, error: { message: `Failed to update: ${deleteError.message}` } };
@@ -71,9 +68,7 @@ export async function updatePaymentOptions(
       sort_order: opt.sort_order,
     }));
 
-    const { error: insertError } = await supabase
-      .from('payment_options')
-      .insert(insertData);
+    const { error: insertError } = await supabase.from('payment_options').insert(insertData);
 
     if (insertError) {
       return { data: null, error: { message: `Failed to save: ${insertError.message}` } };
@@ -82,4 +77,3 @@ export async function updatePaymentOptions(
 
   return { data: null, error: null };
 }
-

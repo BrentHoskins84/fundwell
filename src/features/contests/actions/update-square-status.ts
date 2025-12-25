@@ -1,10 +1,10 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
-import { Database } from '@/libs/supabase/types';
+import { getContestById } from '@/features/contests/queries/get-contest';
 import { sendEmail } from '@/features/emails/send-email';
 import { paymentConfirmedEmail } from '@/features/emails/templates/payment-confirmed-email';
-import { getContestById } from '@/features/contests/queries/get-contest';
+import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
+import { Database } from '@/libs/supabase/types';
 import { getURL } from '@/utils/get-url';
 
 type PaymentStatus = Database['public']['Enums']['payment_status'];

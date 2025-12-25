@@ -1,9 +1,9 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
+import { getPaymentOptionsForContest } from '@/features/contests/queries/get-payment-options';
 import { sendEmail } from '@/features/emails/send-email';
 import { squareClaimedEmail } from '@/features/emails/templates/square-claimed-email';
-import { getPaymentOptionsForContest } from '@/features/contests/queries/get-payment-options';
+import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { getURL } from '@/utils/get-url';
 
 interface ClaimSquareInput {
@@ -183,8 +183,8 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
       contestUrl,
       paymentOptions: paymentOptions.map((opt) => ({
         type: opt.type,
-        handle: opt.handle,
-        link: opt.link ?? undefined,
+        handle: opt.handle_or_link,
+        link: opt.handle_or_link.startsWith('http') ? opt.handle_or_link : undefined,
       })),
     });
 
