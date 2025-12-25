@@ -35,7 +35,7 @@ function generateSlug(name: string, uniqueId: string): string {
   return `${baseSlug}-${uniqueId}`;
 }
 
-export async function createContest(input: CreateContestInput): Promise<ActionResponse> {
+export async function createContest(input: CreateContestInput, retryCount = 0): Promise<ActionResponse> {
   const supabase = await createSupabaseServerClient();
 
   // Verify user is authenticated
@@ -106,8 +106,10 @@ export async function createContest(input: CreateContestInput): Promise<ActionRe
 
     // Handle unique constraint violations
     if (insertError.code === '23505') {
-      // Retry with new code/slug if collision occurred
-      return createContest(input);
+      if (retryCount >= 3) {
+        return { data: null, error: { message: 'Failed to generate unique code. Please try again.' } };
+      }
+      return createContest(input, retryCount + 1);
     }
 
     return {

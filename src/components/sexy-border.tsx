@@ -1,6 +1,6 @@
 import { cn } from '@/utils/cn';
 
-export function SexyBoarder({
+export function SexyBorder({
   children,
   className,
   offset = 10,

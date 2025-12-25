@@ -55,21 +55,19 @@ export function PinEntryModal({ isOpen, contestName, contestSlug, onSuccess }: P
 
   const onSubmit = (data: PinFormData) => {
     setServerError(null);
-
     startTransition(async () => {
-      const result = await verifyPin({
-        contestSlug,
-        enteredPin: data.pin,
-      });
-
-      if (result.error) {
-        setServerError(result.error.message);
-        return;
-      }
-
-      if (result.data?.success) {
-        reset();
-        onSuccess();
+      try {
+        const result = await verifyPin({ contestSlug, enteredPin: data.pin });
+        if (result.error) {
+          setServerError(result.error.message);
+          return;
+        }
+        if (result.data?.success) {
+          reset();
+          onSuccess();
+        }
+      } catch (error) {
+        setServerError('An unexpected error occurred. Please try again.');
       }
     });
   };

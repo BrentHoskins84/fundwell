@@ -4,7 +4,7 @@ import { cva, type VariantProps } from 'class-variance-authority';
 import { cn } from '@/utils/cn';
 import { Slot } from '@radix-ui/react-slot';
 
-import { SexyBoarder } from '../sexy-boarder';
+import { SexyBorder } from '../sexy-border';
 
 const buttonVariants = cva(
   'w-fit inline-flex items-center justify-center whitespace-nowrap text-sm rounded-md font-alt font-medium transition-colors disabled:pointer-events-none disabled:opacity-50',
@@ -62,7 +62,7 @@ export function WithSexyBorder({
   children: React.ReactNode;
 }) {
   if (variant === 'sexy') {
-    return <SexyBoarder className={className}>{children}</SexyBoarder>;
+    return <SexyBorder className={className}>{children}</SexyBorder>;
   } else {
     return <>{children}</>;
   }
