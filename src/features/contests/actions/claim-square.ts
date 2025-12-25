@@ -1,6 +1,10 @@
 'use server';
 
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
+import { sendEmail } from '@/features/emails/send-email';
+import { squareClaimedEmail } from '@/features/emails/templates/square-claimed-email';
+import { getPaymentOptionsForContest } from '@/features/contests/queries/get-payment-options';
+import { getURL } from '@/utils/get-url';
 
 interface ClaimSquareInput {
   squareId: string;
@@ -43,7 +47,7 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
   // Fetch contest to check status and maxSquaresPerPerson
   const { data: contest, error: contestError } = await supabase
     .from('contests')
-    .select('id, status, max_squares_per_person')
+    .select('id, status, max_squares_per_person, name, slug, row_team_name, col_team_name, square_price')
     .eq('id', contestId)
     .single();
 
@@ -161,6 +165,40 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
       data: { success: false },
       error: { message: 'This square was just claimed by someone else. Please select another.' },
     };
+  }
+
+  // Send confirmation email (don't block on failure)
+  try {
+    const paymentOptions = await getPaymentOptionsForContest(contestId);
+    const contestUrl = `${getURL()}/c/${contest.slug}`;
+
+    const { subject, html } = squareClaimedEmail({
+      participantName: firstName,
+      contestName: contest.name,
+      rowTeamName: contest.row_team_name,
+      colTeamName: contest.col_team_name,
+      rowIndex: updatedSquare.row_index,
+      colIndex: updatedSquare.col_index,
+      squarePrice: contest.square_price,
+      contestUrl,
+      paymentOptions: paymentOptions.map((opt) => ({
+        type: opt.type,
+        handle: opt.handle,
+        link: opt.link ?? undefined,
+      })),
+    });
+
+    await sendEmail({
+      to: email,
+      subject,
+      html,
+      contestId,
+      squareId: updatedSquare.id,
+      emailType: 'square_claimed',
+    });
+  } catch (emailError) {
+    // Log error but don't fail the claim
+    console.error('Failed to send square claimed email:', emailError);
   }
 
   return {

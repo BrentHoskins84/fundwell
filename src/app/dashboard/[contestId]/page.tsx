@@ -70,6 +70,25 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
   const paidSquares = squaresList.filter((s) => s.payment_status === 'paid');
   const revenue = paidSquares.length * Number(contest.square_price);
 
+  // Calculate fundraiser amount
+  const totalPayoutPercent =
+    contest.sport_type === 'football'
+      ? (contest.payout_q1_percent ?? 0) +
+        (contest.payout_q2_percent ?? 0) +
+        (contest.payout_q3_percent ?? 0) +
+        (contest.payout_final_percent ?? 0)
+      : (contest.payout_game1_percent ?? 0) +
+        (contest.payout_game2_percent ?? 0) +
+        (contest.payout_game3_percent ?? 0) +
+        (contest.payout_game4_percent ?? 0) +
+        (contest.payout_game5_percent ?? 0) +
+        (contest.payout_game6_percent ?? 0) +
+        (contest.payout_game7_percent ?? 0);
+  const fundraiserPercent = 100 - totalPayoutPercent;
+  const totalPot = 100 * Number(contest.square_price);
+  const fundraiserCurrent = revenue * (fundraiserPercent / 100);
+  const fundraiserMax = totalPot * (fundraiserPercent / 100);
+
   const publicUrl = getURL(`/c/${contest.slug}`);
 
   return (
@@ -112,7 +131,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
         </div>
 
         {/* Stats Cards */}
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
           <Card className="border-zinc-800 bg-zinc-900">
             <CardHeader className="pb-2">
               <CardDescription className="text-zinc-500">Total Squares</CardDescription>
@@ -152,6 +171,18 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
               <p className="text-3xl font-bold text-green-400">${revenue.toLocaleString()}</p>
               <p className="text-xs text-zinc-500">
                 ${(100 * Number(contest.square_price)).toLocaleString()} max
+              </p>
+            </CardContent>
+          </Card>
+
+          <Card className="border-zinc-800 bg-zinc-900">
+            <CardHeader className="pb-2">
+              <CardDescription className="text-zinc-500">Fundraiser</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <p className="text-3xl font-bold text-amber-400">${fundraiserCurrent.toLocaleString()}</p>
+              <p className="text-xs text-zinc-500">
+                ${fundraiserMax.toLocaleString()} potential
               </p>
             </CardContent>
           </Card>
@@ -202,9 +233,9 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-3">
-              {contest.status === 'draft' && <OpenContestButton contestId={contestId} className="w-full" />}
+              {contest.status === 'draft' && <OpenContestButton contestId={contestId} className="w-full justify-start" />}
 
-              <Button variant="default" className="w-full" asChild>
+              <Button variant="default" className="w-full justify-start" asChild>
                 <Link href={`/c/${contest.slug}`} target="_blank">
                   <Eye className="mr-2 h-4 w-4" />
                   View Public Page
@@ -235,10 +266,10 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
                 }}
                 scores={scores}
                 squares={squaresList}
-                className="w-full"
+                className="w-full justify-start"
               />
 
-              <Button variant="default" className="w-full" asChild>
+              <Button variant="default" className="w-full justify-start" asChild>
                 <Link href={`/dashboard/${contestId}/participants`}>
                   <Users className="mr-2 h-4 w-4" />
                   Manage Participants

@@ -2,6 +2,10 @@
 
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
+import { sendEmail } from '@/features/emails/send-email';
+import { paymentConfirmedEmail } from '@/features/emails/templates/payment-confirmed-email';
+import { getContestById } from '@/features/contests/queries/get-contest';
+import { getURL } from '@/utils/get-url';
 
 type PaymentStatus = Database['public']['Enums']['payment_status'];
 
@@ -22,9 +26,7 @@ interface UpdateSquareStatusResponse {
  * When setting to 'available', clears all claimant info.
  * When setting to 'paid', sets paid_at timestamp.
  */
-export async function updateSquareStatus(
-  input: UpdateSquareStatusInput
-): Promise<UpdateSquareStatusResponse> {
+export async function updateSquareStatus(input: UpdateSquareStatusInput): Promise<UpdateSquareStatusResponse> {
   const { squareId, contestId, newStatus } = input;
 
   // Validate required fields
@@ -83,7 +85,7 @@ export async function updateSquareStatus(
   // Verify square belongs to contest
   const { data: square, error: squareError } = await supabase
     .from('squares')
-    .select('id, contest_id, payment_status')
+    .select('id, contest_id, payment_status, claimant_email, claimant_first_name, row_index, col_index')
     .eq('id', squareId)
     .eq('contest_id', contestId)
     .single();
@@ -142,9 +144,40 @@ export async function updateSquareStatus(
     };
   }
 
+  // Send confirmation email when marking as paid (don't block on failure)
+  if (newStatus === 'paid' && square.claimant_email) {
+    try {
+      const contestDetails = await getContestById(contestId);
+      if (contestDetails) {
+        const contestUrl = `${getURL()}/c/${contestDetails.slug}`;
+
+        const { subject, html } = paymentConfirmedEmail({
+          participantName: square.claimant_first_name || 'there',
+          contestName: contestDetails.name,
+          rowTeamName: contestDetails.row_team_name,
+          colTeamName: contestDetails.col_team_name,
+          rowIndex: square.row_index,
+          colIndex: square.col_index,
+          contestUrl,
+        });
+
+        await sendEmail({
+          to: square.claimant_email,
+          subject,
+          html,
+          contestId,
+          squareId: square.id,
+          emailType: 'payment_confirmed',
+        });
+      }
+    } catch (emailError) {
+      // Log error but don't fail the status update
+      console.error('Failed to send payment confirmed email:', emailError);
+    }
+  }
+
   return {
     data: { success: true },
     error: null,
   };
 }
-
