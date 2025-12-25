@@ -1,14 +1,14 @@
 import Link from 'next/link';
 import {
-  IoColorPaletteOutline,
-  IoGridOutline,
-  IoLockClosedOutline,
-  IoNotificationsOutline,
-  IoShareSocialOutline,
-  IoStatsChartOutline,
-  IoTrophyOutline,
-  IoWalletOutline,
-} from 'react-icons/io5';
+  BarChart3,
+  Bell,
+  LayoutGrid,
+  Lock,
+  Palette,
+  Share2,
+  Trophy,
+  Wallet,
+} from 'lucide-react';
 
 import { Container } from '@/components/container';
 import { Button } from '@/components/ui/button';
@@ -38,7 +38,7 @@ function HeroSection() {
         <div className="mx-auto max-w-3xl text-center">
           {/* Badge */}
           <div className="mb-6 inline-flex items-center gap-2 rounded-full border border-griddo-primary/30 bg-griddo-primary/10 px-4 py-2">
-            <IoTrophyOutline className="h-4 w-4 text-griddo-primary" />
+            <Trophy className="h-4 w-4 text-griddo-primary" />
             <span className="text-sm font-medium text-griddo-primary">
               The easiest way to run squares fundraisers
             </span>
@@ -109,21 +109,21 @@ function HowItWorksSection() {
       title: 'Create your contest',
       description:
         'Set up your squares grid in minutes. Add your branding, set the price per square, and configure payment options.',
-      icon: IoGridOutline,
+      icon: LayoutGrid,
     },
     {
       number: '02',
       title: 'Share & collect',
       description:
         'Share your unique link. Participants claim squares and pay through your preferred payment methods like Venmo or PayPal.',
-      icon: IoShareSocialOutline,
+      icon: Share2,
     },
     {
       number: '03',
       title: 'Track & announce',
       description:
         'Monitor payments, enter scores each quarter, and let the system automatically determine and announce winners.',
-      icon: IoTrophyOutline,
+      icon: Trophy,
     },
   ];
 
@@ -171,32 +171,32 @@ function HowItWorksSection() {
 function FeaturesSection() {
   const features = [
     {
-      icon: IoGridOutline,
+      icon: LayoutGrid,
       title: '10×10 Squares Grid',
       description: 'Classic 100-square grid with randomized numbers for fair play.',
     },
     {
-      icon: IoColorPaletteOutline,
+      icon: Palette,
       title: 'Custom Branding',
       description: 'Add your team logos, colors, and contest name for a personal touch.',
     },
     {
-      icon: IoWalletOutline,
+      icon: Wallet,
       title: 'Payment Tracking',
       description: 'Connect Venmo, PayPal, or other options. Track who has paid.',
     },
     {
-      icon: IoStatsChartOutline,
+      icon: BarChart3,
       title: 'Live Score Entry',
       description: 'Enter scores each quarter and watch winners get highlighted.',
     },
     {
-      icon: IoNotificationsOutline,
+      icon: Bell,
       title: 'Email Notifications',
       description: 'Automatic reminders for unpaid squares and winner announcements.',
     },
     {
-      icon: IoLockClosedOutline,
+      icon: Lock,
       title: 'Secure & Private',
       description: 'Your contest is only visible to people with your unique link.',
     },

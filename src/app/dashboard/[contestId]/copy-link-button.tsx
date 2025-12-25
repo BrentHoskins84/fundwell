@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { IoCheckmark, IoCopy } from 'react-icons/io5';
+import { Check, Copy } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 
@@ -28,12 +28,12 @@ export function CopyLinkButton({ url, code }: CopyLinkButtonProps) {
     <Button variant="orange" size="sm" onClick={handleCopy}>
       {copied ? (
         <>
-          <IoCheckmark className="mr-2 h-4 w-4" />
+          <Check className="mr-2 h-4 w-4" />
           Copied!
         </>
       ) : (
         <>
-          <IoCopy className="mr-2 h-4 w-4" />
+          <Copy className="mr-2 h-4 w-4" />
           Share ({code})
         </>
       )}

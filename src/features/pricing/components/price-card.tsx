@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from 'react';
 import Link from 'next/link';
-import { IoCheckmark } from 'react-icons/io5';
+import { Check } from 'lucide-react';
 
 import { SexyBorder } from '@/components/sexy-border';
 import { Button } from '@/components/ui/button';
@@ -109,7 +109,7 @@ export function PricingCard({
 function CheckItem({ text }: { text: string }) {
   return (
     <div className='flex items-center gap-2'>
-      <IoCheckmark className='my-auto flex-shrink-0 text-slate-500' />
+      <Check className='my-auto flex-shrink-0 text-slate-500' />
       <p className='text-sm font-medium text-white first-letter:capitalize'>{text}</p>
     </div>
   );

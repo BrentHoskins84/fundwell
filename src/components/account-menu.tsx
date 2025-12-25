@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { IoPersonCircleOutline } from 'react-icons/io5';
+import { CircleUser } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -39,7 +39,7 @@ export function AccountMenu({ signOut }: { signOut: () => Promise<ActionResponse
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className='rounded-full'>
-        <IoPersonCircleOutline size={24} />
+        <CircleUser className="h-6 w-6" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className='me-4'>
         <DropdownMenuItem asChild>

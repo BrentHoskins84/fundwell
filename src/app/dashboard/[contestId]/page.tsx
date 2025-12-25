@@ -1,12 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import {
-  IoArrowBack,
-  IoEye,
-  IoGameController,
-  IoPeople,
-  IoSettings,
-} from 'react-icons/io5';
+import { ArrowLeft, Eye, Gamepad2, Settings, Users } from 'lucide-react';
 
 import { AdPlaceholder } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
@@ -81,7 +75,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
         href="/dashboard"
         className="inline-flex items-center gap-2 text-sm text-zinc-400 transition-colors hover:text-white"
       >
-        <IoArrowBack className="h-4 w-4" />
+        <ArrowLeft className="h-4 w-4" />
         Back to Dashboard
       </Link>
 
@@ -106,7 +100,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
             <CopyLinkButton url={publicUrl} code={contest.code} />
             <Button variant="default" size="sm" asChild>
               <Link href={`/dashboard/${contestId}/settings`}>
-                <IoSettings className="mr-2 h-4 w-4" />
+                <Settings className="mr-2 h-4 w-4" />
                 Settings
               </Link>
             </Button>
@@ -190,21 +184,21 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
 
               <Button variant="default" className="w-full" asChild>
                 <Link href={`/c/${contest.slug}`} target="_blank">
-                  <IoEye className="mr-2 h-4 w-4" />
+                  <Eye className="mr-2 h-4 w-4" />
                   View Public Page
                 </Link>
               </Button>
 
               <Button variant="default" className="w-full" asChild>
                 <Link href={`/dashboard/${contestId}/scores`}>
-                  <IoGameController className="mr-2 h-4 w-4" />
+                  <Gamepad2 className="mr-2 h-4 w-4" />
                   Enter Scores
                 </Link>
               </Button>
 
               <Button variant="default" className="w-full" asChild>
                 <Link href={`/dashboard/${contestId}/participants`}>
-                  <IoPeople className="mr-2 h-4 w-4" />
+                  <Users className="mr-2 h-4 w-4" />
                   Manage Participants
                 </Link>
               </Button>

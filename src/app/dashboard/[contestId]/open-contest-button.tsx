@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { IoPlay } from 'react-icons/io5';
+import { Play } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/components/ui/use-toast';
@@ -50,7 +50,7 @@ export function OpenContestButton({ contestId, className }: OpenContestButtonPro
 
   return (
     <Button variant="orange" onClick={handleOpen} disabled={isLoading} className={className}>
-      <IoPlay className="mr-2 h-4 w-4" />
+      <Play className="mr-2 h-4 w-4" />
       {isLoading ? 'Opening...' : 'Open Contest'}
     </Button>
   );

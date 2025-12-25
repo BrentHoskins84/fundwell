@@ -1,7 +1,8 @@
 'use client';
 
 import Link from 'next/link';
-import { IoAmericanFootball, IoBaseball, IoGrid } from 'react-icons/io5';
+import { Grid3X3 } from 'lucide-react';
+import { IoAmericanFootball, IoBaseball } from 'react-icons/io5';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -78,7 +79,7 @@ export function ContestCard({ contest, claimedCount = 0 }: ContestCardProps) {
               </div>
               {/* Progress */}
               <div className="flex items-center gap-1.5 text-sm text-zinc-400">
-                <IoGrid className="h-3.5 w-3.5" />
+                <Grid3X3 className="h-3.5 w-3.5" />
                 <span>
                   <span className="font-medium text-zinc-300">{claimedCount}</span>
                   <span className="text-zinc-500">/100</span>

@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { FormProvider,useForm } from 'react-hook-form';
-import { IoArrowBack, IoArrowForward, IoCheckmark } from 'react-icons/io5';
+import { ArrowLeft, ArrowRight, Check } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -116,7 +116,7 @@ export default function NewContestPage() {
           href="/dashboard"
           className="mb-4 inline-flex items-center gap-2 text-sm text-zinc-400 transition-colors hover:text-white"
         >
-          <IoArrowBack className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" />
           Back to Dashboard
         </Link>
         <h1 className="text-2xl font-bold text-white lg:text-3xl">Create New Contest</h1>
@@ -145,7 +145,7 @@ export default function NewContestPage() {
                   )}
                 >
                   {step.id < currentStep ? (
-                    <IoCheckmark className="h-5 w-5" />
+                    <Check className="h-5 w-5" />
                   ) : (
                     step.id
                   )}
@@ -204,7 +204,7 @@ export default function NewContestPage() {
               disabled={currentStep === 1}
               className={cn(currentStep === 1 && 'invisible')}
             >
-              <IoArrowBack className="mr-2 h-4 w-4" />
+              <ArrowLeft className="mr-2 h-4 w-4" />
               Back
             </Button>
 
@@ -215,7 +215,7 @@ export default function NewContestPage() {
                 onClick={handleNext}
               >
                 Next
-                <IoArrowForward className="ml-2 h-4 w-4" />
+                <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
             ) : (
               <Button
@@ -230,7 +230,7 @@ export default function NewContestPage() {
                   </>
                 ) : (
                   <>
-                    <IoCheckmark className="mr-2 h-4 w-4" />
+                    <Check className="mr-2 h-4 w-4" />
                     Create Contest
                   </>
                 )}

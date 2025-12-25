@@ -3,8 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { usePathname, useRouter } from 'next/navigation';
-import { IoCardOutline, IoGridOutline, IoLogOutOutline, IoMenuOutline, IoPersonOutline } from 'react-icons/io5';
+import { LogOut, Menu } from 'lucide-react';
 
 import {
   DropdownMenu,
@@ -15,15 +14,28 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from '@/components/ui/sheet';
-import { useToast } from '@/components/ui/use-toast';
 import { signOut } from '@/features/auth/auth-actions';
 import { cn } from '@/utils/cn';
 
-const navItems = [
-  { href: '/dashboard', label: 'My Contests', icon: IoGridOutline },
-  { href: '/dashboard/account', label: 'Account', icon: IoPersonOutline },
-  { href: '/dashboard/billing', label: 'Billing', icon: IoCardOutline },
-];
+import { NavItems } from './nav-items';
+
+function LogoutButton({ onClick, className }: { onClick?: () => void; className?: string }) {
+  return (
+    <form action={signOut}>
+      <button
+        type='submit'
+        onClick={onClick}
+        className={cn(
+          'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white',
+          className
+        )}
+      >
+        <LogOut className='h-5 w-5' />
+        Log out
+      </button>
+    </form>
+  );
+}
 
 interface DashboardShellProps {
   children: React.ReactNode;
@@ -31,27 +43,7 @@ interface DashboardShellProps {
 }
 
 export function DashboardShell({ children, userEmail }: DashboardShellProps) {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { toast } = useToast();
   const [mobileNavOpen, setMobileNavOpen] = useState(false);
-
-  async function handleLogout() {
-    const response = await signOut();
-
-    if (response?.error) {
-      toast({
-        variant: 'destructive',
-        description: 'An error occurred while logging out. Please try again.',
-      });
-    } else {
-      router.push('/');
-      router.refresh();
-      toast({
-        description: 'You have been logged out.',
-      });
-    }
-  }
 
   return (
     <div className='flex min-h-screen flex-col bg-zinc-900'>
@@ -69,35 +61,12 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
 
             {/* Navigation */}
             <nav className='flex-1 space-y-1 px-3 py-4'>
-              {navItems.map((item) => {
-                const isActive = pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    className={cn(
-                      'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                      isActive
-                        ? 'bg-orange-500/10 text-orange-500'
-                        : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                    )}
-                  >
-                    <item.icon className='h-5 w-5' />
-                    {item.label}
-                  </Link>
-                );
-              })}
+              <NavItems />
             </nav>
 
             {/* Sidebar Footer */}
             <div className='border-t border-zinc-800 p-4'>
-              <button
-                onClick={handleLogout}
-                className='flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white'
-              >
-                <IoLogOutOutline className='h-5 w-5' />
-                Log out
-              </button>
+              <LogoutButton />
             </div>
           </div>
         </aside>
@@ -111,7 +80,7 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
               <Sheet open={mobileNavOpen} onOpenChange={setMobileNavOpen}>
                 <SheetTrigger asChild>
                   <button className='rounded-lg p-2 text-zinc-400 hover:bg-zinc-800 hover:text-white'>
-                    <IoMenuOutline className='h-6 w-6' />
+                    <Menu className='h-6 w-6' />
                     <span className='sr-only'>Open menu</span>
                   </button>
                 </SheetTrigger>
@@ -123,38 +92,10 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
                     </SheetTitle>
                   </SheetHeader>
                   <nav className='flex-1 space-y-1 px-3 py-4'>
-                    {navItems.map((item) => {
-                      const isActive =
-                        pathname === item.href || (item.href !== '/dashboard' && pathname.startsWith(item.href));
-                      return (
-                        <Link
-                          key={item.href}
-                          href={item.href}
-                          onClick={() => setMobileNavOpen(false)}
-                          className={cn(
-                            'flex items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors',
-                            isActive
-                              ? 'bg-orange-500/10 text-orange-500'
-                              : 'text-zinc-400 hover:bg-zinc-800 hover:text-white'
-                          )}
-                        >
-                          <item.icon className='h-5 w-5' />
-                          {item.label}
-                        </Link>
-                      );
-                    })}
+                    <NavItems onClick={() => setMobileNavOpen(false)} />
                   </nav>
                   <div className='border-t border-zinc-800 p-4'>
-                    <button
-                      onClick={() => {
-                        setMobileNavOpen(false);
-                        handleLogout();
-                      }}
-                      className='flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium text-zinc-400 transition-colors hover:bg-zinc-800 hover:text-white'
-                    >
-                      <IoLogOutOutline className='h-5 w-5' />
-                      Log out
-                    </button>
+                    <LogoutButton onClick={() => setMobileNavOpen(false)} />
                   </div>
                 </SheetContent>
               </Sheet>
@@ -189,11 +130,12 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
                   <Link href='/dashboard/billing'>Billing</Link>
                 </DropdownMenuItem>
                 <DropdownMenuSeparator className='bg-zinc-700' />
-                <DropdownMenuItem
-                  onClick={handleLogout}
-                  className='cursor-pointer text-zinc-300 focus:bg-zinc-700 focus:text-white'
-                >
-                  Log out
+                <DropdownMenuItem asChild className='cursor-pointer p-0 text-zinc-300 focus:bg-zinc-700 focus:text-white'>
+                  <form action={signOut} className='w-full'>
+                    <button type='submit' className='w-full px-2 py-1.5 text-left'>
+                      Log out
+                    </button>
+                  </form>
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
