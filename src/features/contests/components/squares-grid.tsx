@@ -1,5 +1,6 @@
 'use client';
 
+import { Fragment } from 'react';
 import { Trophy } from 'lucide-react';
 
 import { cn } from '@/utils/cn';
@@ -62,6 +63,7 @@ export function SquaresGrid({
   const displayRowNumbers = rowNumbers ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const displayColNumbers = colNumbers ?? [0, 1, 2, 3, 4, 5, 6, 7, 8, 9];
   const hasAssignedNumbers = rowNumbers !== null && rowNumbers !== undefined;
+  
   // Create 10x10 grid from squares array
   const grid: (Square | null)[][] = Array.from({ length: 10 }, () => Array(10).fill(null));
   squares.forEach((square) => {
@@ -72,66 +74,85 @@ export function SquaresGrid({
 
   const isClickable = !!onSquareClick && !disabled;
 
+  // Grid column template based on whether numbers are shown
+  // Using fixed sizes to prevent collapse on mobile - grid will scroll horizontally
+  // On lg+ screens, use larger squares for better desktop experience
+  const gridColsClass = showNumbers
+    ? 'grid-cols-[24px_repeat(10,40px)] sm:grid-cols-[28px_repeat(10,44px)] md:grid-cols-[32px_repeat(10,48px)] lg:grid-cols-[36px_repeat(10,56px)]'
+    : 'grid-cols-[repeat(10,40px)] sm:grid-cols-[repeat(10,44px)] md:grid-cols-[repeat(10,48px)] lg:grid-cols-[repeat(10,56px)]';
+
   return (
-    <div className="overflow-x-auto">
-      <div className="min-w-[500px] p-4">
-        {/* Column team header */}
-        <div className={cn('mb-2 text-center text-sm font-medium text-zinc-400', showNumbers ? 'ml-16' : 'ml-8')}>
-          {colTeamName}
-        </div>
+    <div className="relative">
+      {/* Scroll shadow indicators - hint that content is scrollable (mobile only) */}
+      <div className="pointer-events-none absolute left-0 top-0 bottom-0 z-10 w-6 bg-gradient-to-r from-zinc-800 to-transparent opacity-50 lg:hidden" />
+      <div className="pointer-events-none absolute right-0 top-0 bottom-0 z-10 w-6 bg-gradient-to-l from-zinc-800 to-transparent opacity-50 lg:hidden" />
+      
+      {/* Scrollable container on mobile, centered on desktop */}
+      <div className="overflow-x-auto lg:overflow-visible lg:flex lg:justify-center">
+        {/* Fixed minimum width container - prevents grid collapse on mobile, centers on desktop */}
+        <div className="min-w-[480px] w-max p-3 sm:p-4 lg:min-w-0">
+          {/* Main layout: Row team label + Grid */}
+          <div className="flex gap-1 lg:gap-2">
+            {/* Row team label - vertical, outside the grid */}
+            <div className="flex w-5 flex-shrink-0 items-center justify-center sm:w-6 lg:w-8">
+              <span
+                className="whitespace-nowrap text-[10px] font-medium text-zinc-400 sm:text-xs lg:text-sm"
+                style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
+              >
+                {rowTeamName}
+              </span>
+            </div>
 
-        <div className="flex">
-          {/* Row team label - vertical */}
-          <div className="flex w-8 flex-shrink-0 items-center justify-center">
-            <span
-              className="whitespace-nowrap text-sm font-medium text-zinc-400"
-              style={{ writingMode: 'vertical-lr', transform: 'rotate(180deg)' }}
-            >
-              {rowTeamName}
-            </span>
-          </div>
-
-          <div className="flex-1">
-            {/* Column numbers row */}
-            {showNumbers && (
-              <div className="mb-1 ml-8 grid grid-cols-10 gap-1">
-                {displayColNumbers.map((num, i) => (
-                  <div
-                    key={`col-${i}`}
-                    className={cn(
-                      'flex aspect-square items-center justify-center text-xs font-medium',
-                      hasAssignedNumbers ? 'text-orange-400' : 'text-zinc-500'
-                    )}
-                  >
-                    {hasAssignedNumbers ? num : '?'}
-                  </div>
-                ))}
+            {/* Grid container */}
+            <div>
+              {/* Column team header */}
+              <div className={cn(
+                'mb-1.5 text-center text-[10px] font-medium text-zinc-400 sm:mb-2 sm:text-xs lg:text-sm lg:mb-3',
+                showNumbers && 'pl-6 sm:pl-7 md:pl-8 lg:pl-9'
+              )}>
+                {colTeamName}
               </div>
-            )}
 
-            <div className="flex">
-              {/* Row numbers column */}
-              {showNumbers && (
-                <div className="mr-1 grid grid-rows-10 gap-1">
-                  {displayRowNumbers.map((num, i) => (
-                    <div
-                      key={`row-${i}`}
-                      className={cn(
-                        'flex aspect-square w-6 items-center justify-center text-xs font-medium',
-                        hasAssignedNumbers ? 'text-orange-400' : 'text-zinc-500'
-                      )}
-                    >
-                      {hasAssignedNumbers ? num : '?'}
-                    </div>
-                  ))}
-                </div>
-              )}
+              {/* Unified CSS Grid for numbers and squares */}
+              <div className={cn('grid gap-1 lg:gap-1.5', gridColsClass)}>
+                {/* Row 0: Empty corner cell + Column numbers */}
+                {showNumbers && (
+                  <>
+                    {/* Empty top-left corner */}
+                    <div className="h-6 sm:h-7 md:h-8 lg:h-9" />
+                    
+                    {/* Column numbers */}
+                    {displayColNumbers.map((num, i) => (
+                      <div
+                        key={`col-${i}`}
+                        className={cn(
+                          'flex h-6 items-center justify-center text-xs font-medium sm:h-7 sm:text-sm md:h-8 lg:h-9',
+                          hasAssignedNumbers ? 'text-orange-400' : 'text-zinc-500'
+                        )}
+                      >
+                        {hasAssignedNumbers ? num : '?'}
+                      </div>
+                    ))}
+                  </>
+                )}
 
-              {/* Main grid */}
-              <div className="flex-1">
-                <div className="grid grid-cols-10 gap-1">
-                  {grid.map((row, rowIndex) =>
-                    row.map((square, colIndex) => {
+                {/* Rows 1-10: Row number + 10 squares */}
+                {grid.map((row, rowIndex) => (
+                  <Fragment key={`row-${rowIndex}`}>
+                    {/* Row number */}
+                    {showNumbers && (
+                      <div
+                        className={cn(
+                          'flex h-10 items-center justify-center text-xs font-medium sm:h-11 sm:text-sm md:h-12 lg:h-14',
+                          hasAssignedNumbers ? 'text-orange-400' : 'text-zinc-500'
+                        )}
+                      >
+                        {hasAssignedNumbers ? displayRowNumbers[rowIndex] : '?'}
+                      </div>
+                    )}
+
+                    {/* 10 squares for this row */}
+                    {row.map((square, colIndex) => {
                       const initials = square ? getInitials(square.claimant_first_name, square.claimant_last_name) : '';
                       const tooltip = square ? getSquareTooltip(square) : 'Loading...';
                       const isWinner = square && winningSquareIds.includes(square.id);
@@ -147,7 +168,11 @@ export function SquaresGrid({
                             }
                           }}
                           className={cn(
-                            'aspect-square rounded-sm text-xs font-medium transition-colors flex items-center justify-center relative',
+                            // Base styles - fixed height to match grid columns
+                            'h-10 rounded-sm font-medium transition-all flex items-center justify-center relative select-none',
+                            'text-xs sm:h-11 sm:text-sm md:h-12 lg:h-14 lg:rounded',
+                            // Touch feedback
+                            isClickable && 'active:scale-95 active:opacity-80',
                             // Winner highlight
                             isWinner && 'ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-900',
                             // Available
@@ -173,45 +198,44 @@ export function SquaresGrid({
                           title={isWinner ? `🏆 WINNER! ${tooltip}` : tooltip}
                         >
                           {isWinner ? (
-                            <Trophy className="h-3 w-3 text-amber-400" />
+                            <Trophy className="h-4 w-4 text-amber-400 sm:h-5 sm:w-5 lg:h-6 lg:w-6" />
                           ) : (
                             square?.payment_status !== 'available' && initials
                           )}
                         </button>
                       );
-                    })
-                  )}
-                </div>
+                    })}
+                  </Fragment>
+                ))}
               </div>
             </div>
           </div>
-        </div>
 
-        {/* Legend */}
-        <div className={cn('mt-4 flex flex-wrap justify-center gap-4 text-xs text-zinc-400', showNumbers ? 'ml-16' : 'ml-8')}>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-sm bg-zinc-700" />
-            <span>Available</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-sm bg-yellow-500/30" />
-            <span>Pending</span>
-          </div>
-          <div className="flex items-center gap-2">
-            <div className="h-3 w-3 rounded-sm bg-green-500/30" />
-            <span>Paid</span>
-          </div>
-          {winningSquareIds.length > 0 && (
+          {/* Legend */}
+          <div className="mt-4 flex flex-wrap justify-center gap-4 text-xs text-zinc-400">
             <div className="flex items-center gap-2">
-              <div className="h-3 w-3 rounded-sm bg-zinc-700 ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-900 flex items-center justify-center">
-                <Trophy className="h-2 w-2 text-amber-400" />
-              </div>
-              <span>Winner</span>
+              <div className="h-3 w-3 rounded-sm bg-zinc-700" />
+              <span>Available</span>
             </div>
-          )}
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-sm bg-yellow-500/30" />
+              <span>Pending</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <div className="h-3 w-3 rounded-sm bg-green-500/30" />
+              <span>Paid</span>
+            </div>
+            {winningSquareIds.length > 0 && (
+              <div className="flex items-center gap-2">
+                <div className="h-3 w-3 rounded-sm bg-zinc-700 ring-2 ring-amber-400 ring-offset-1 ring-offset-zinc-900 flex items-center justify-center">
+                  <Trophy className="h-2 w-2 text-amber-400" />
+                </div>
+                <span>Winner</span>
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>
   );
 }
-
