@@ -7,6 +7,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Square,SquaresGrid } from '@/features/contests/components';
+import { getContestById, getSquaresForContest } from '@/features/contests/queries';
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
 import { getURL } from '@/utils/get-url';
@@ -42,23 +43,14 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
   }
 
   // Fetch contest (RLS will ensure only owner can view)
-  const { data: contest, error: contestError } = await supabase
-    .from('contests')
-    .select('*')
-    .eq('id', contestId)
-    .single();
+  const contest = await getContestById(contestId);
 
-  if (contestError || !contest) {
+  if (!contest) {
     notFound();
   }
 
   // Fetch squares for the grid
-  const { data: squares } = await supabase
-    .from('squares')
-    .select('id, row_index, col_index, payment_status, claimant_first_name, claimant_last_name')
-    .eq('contest_id', contestId)
-    .order('row_index')
-    .order('col_index');
+  const squares = await getSquaresForContest(contestId);
 
   // Calculate stats
   const squaresList = (squares || []) as Square[];

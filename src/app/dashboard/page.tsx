@@ -3,6 +3,7 @@ import { PlusCircle } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { ContestCard } from '@/features/contests/components/contest-card';
+import { listContestsForOwner } from '@/features/contests/queries';
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 
 function ContestCardSkeleton() {
@@ -67,19 +68,12 @@ export default async function DashboardPage() {
   }
 
   // Fetch contests with claimed squares count
-  const { data: contests, error } = await supabase
-    .from('contests')
-    .select(`
-      *,
-      squares(payment_status)
-    `)
-    .eq('owner_id', user.id)
-    .order('created_at', { ascending: false });
+  const contests = await listContestsForOwner(user.id);
 
   // Calculate claimed counts for each contest
-  const contestsWithCounts = contests?.map((contest) => {
+  const contestsWithCounts = contests.map((contest) => {
     const claimedCount = contest.squares?.filter(
-      (sq: { payment_status: string }) => sq.payment_status !== 'available'
+      (sq) => sq.payment_status !== 'available'
     ).length ?? 0;
     return { ...contest, claimedCount };
   });
@@ -96,11 +90,7 @@ export default async function DashboardPage() {
         </Button>
       </div>
 
-      {error ? (
-        <div className="rounded-lg border border-red-500/20 bg-red-500/10 p-4 text-center text-red-400">
-          Failed to load contests. Please try again.
-        </div>
-      ) : !contestsWithCounts || contestsWithCounts.length === 0 ? (
+      {contestsWithCounts.length === 0 ? (
         <EmptyState />
       ) : (
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">

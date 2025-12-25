@@ -3,60 +3,13 @@ import { notFound } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { hasContestAccess } from '@/features/contests/actions/verify-pin';
+import { getContestBySlug, getSquaresForContest } from '@/features/contests/queries';
 import { hasActiveSubscription } from '@/features/subscriptions/has-active-subscription';
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 
 import { ContestPageClient } from './contest-page-client';
 
 interface ContestPageProps {
   params: Promise<{ slug: string }>;
-}
-
-async function getContestBySlug(slug: string) {
-  const supabase = await createSupabaseServerClient();
-
-  const { data: contest, error } = await supabase
-    .from('contests')
-    .select(
-      `
-      id,
-      owner_id,
-      name,
-      slug,
-      description,
-      status,
-      row_team_name,
-      col_team_name,
-      square_price,
-      max_squares_per_person,
-      access_pin,
-      primary_color,
-      secondary_color,
-      hero_image_url,
-      org_image_url
-    `
-    )
-    .eq('slug', slug)
-    .single();
-
-  if (error || !contest) {
-    return null;
-  }
-
-  return contest;
-}
-
-async function getSquaresForContest(contestId: string) {
-  const supabase = await createSupabaseServerClient();
-
-  const { data: squares } = await supabase
-    .from('squares')
-    .select('id, row_index, col_index, payment_status, claimant_first_name, claimant_last_name')
-    .eq('contest_id', contestId)
-    .order('row_index')
-    .order('col_index');
-
-  return squares || [];
 }
 
 export default async function ContestPage({ params }: ContestPageProps) {

@@ -3,7 +3,7 @@
 import { cookies } from 'next/headers';
 import { createHash } from 'crypto';
 
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
+import { getContestPin } from '@/features/contests/queries';
 
 interface VerifyPinInput {
   contestSlug: string;
@@ -29,18 +29,10 @@ export async function verifyPin(input: VerifyPinInput): Promise<VerifyPinRespons
     };
   }
 
-  const supabase = await createSupabaseServerClient();
+  // Fetch contest access PIN
+  const accessPin = await getContestPin(contestSlug);
 
-  // Fetch contest by slug
-  const { data: contest, error: fetchError } = await supabase
-    .from('contests')
-    .select('access_pin')
-    .eq('slug', contestSlug)
-    .single();
-
-  if (fetchError || !contest) {
-    // TODO: Replace with proper error handling
-    console.error('Error fetching contest:', fetchError);
+  if (accessPin === null) {
     return {
       data: null,
       error: { message: 'Contest not found' },
@@ -48,7 +40,7 @@ export async function verifyPin(input: VerifyPinInput): Promise<VerifyPinRespons
   }
 
   // Compare PINs (case-insensitive)
-  const isCorrect = contest.access_pin?.toUpperCase() === enteredPin.toUpperCase();
+  const isCorrect = accessPin.toUpperCase() === enteredPin.toUpperCase();
 
   if (!isCorrect) {
     return {
@@ -62,7 +54,7 @@ export async function verifyPin(input: VerifyPinInput): Promise<VerifyPinRespons
   const cookieName = `contest_access_${contestSlug}`;
   const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000); // 7 days
   const pinHash = createHash('sha256')
-    .update(contest.access_pin || '')
+    .update(accessPin)
     .digest('hex');
 
   cookieStore.set(cookieName, pinHash, {
