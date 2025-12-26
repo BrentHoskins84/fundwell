@@ -272,7 +272,7 @@ serve(async (req: Request) => {
   }
 
   const baseUrl = Deno.env.get('SITE_URL') || 'https://griddo.us';
-  const contestUrl = `${baseUrl}/c/${contest.slug}`;
+  const contestUrl = `${baseUrl}/c/${encodeURIComponent(contest.slug)}`;
 
   let successCount = 0;
   let failCount = 0;
