@@ -14,6 +14,18 @@ interface NumbersRevealedEmailParams {
   contestUrl: string;
 }
 
+/**
+ * Escapes HTML special characters to prevent XSS/HTML injection in emails.
+ */
+function escapeHtml(unsafe: string): string {
+  return unsafe
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#039;');
+}
+
 function generateNumbersRevealedEmail({
   participantName,
   contestName,
@@ -25,6 +37,12 @@ function generateNumbersRevealedEmail({
   colNumber,
   contestUrl,
 }: NumbersRevealedEmailParams): { subject: string; html: string } {
+  // Escape user-provided values to prevent HTML injection
+  const safeParticipantName = escapeHtml(participantName);
+  const safeContestName = escapeHtml(contestName);
+  const safeRowTeamName = escapeHtml(rowTeamName);
+  const safeColTeamName = escapeHtml(colTeamName);
+
   const subject = `Numbers are in for ${contestName}!`;
 
   const html = `
@@ -53,11 +71,11 @@ function generateNumbersRevealedEmail({
               
               <!-- Greeting -->
               <p style="margin: 0 0 16px 0; color: #fafafa; font-size: 16px;">
-                Hi ${participantName},
+                Hi ${safeParticipantName},
               </p>
               
               <p style="margin: 0 0 24px 0; color: #fafafa; font-size: 16px;">
-                The numbers have been revealed for <strong style="color: #F97316;">${contestName}</strong>!
+                The numbers have been revealed for <strong style="color: #F97316;">${safeContestName}</strong>!
               </p>
               
               <!-- Square Details Box -->
@@ -81,7 +99,7 @@ function generateNumbersRevealedEmail({
                       <tr>
                         <td style="padding: 12px; background-color: #27272A; border-radius: 6px; text-align: center;">
                           <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 12px; text-transform: uppercase;">
-                            ${rowTeamName}
+                            ${safeRowTeamName}
                           </p>
                           <p style="margin: 0; color: #F97316; font-size: 32px; font-weight: bold;">
                             ${rowNumber}
@@ -90,7 +108,7 @@ function generateNumbersRevealedEmail({
                         <td style="width: 16px;"></td>
                         <td style="padding: 12px; background-color: #27272A; border-radius: 6px; text-align: center;">
                           <p style="margin: 0 0 4px 0; color: #a1a1aa; font-size: 12px; text-transform: uppercase;">
-                            ${colTeamName}
+                            ${safeColTeamName}
                           </p>
                           <p style="margin: 0; color: #F97316; font-size: 32px; font-weight: bold;">
                             ${colNumber}
@@ -246,8 +264,33 @@ serve(async (req: Request) => {
   let failCount = 0;
 
   for (const square of squares) {
-    const rowNumber = contest.row_numbers[square.row_index];
-    const colNumber = contest.col_numbers[square.col_index];
+    // Validate array indices before accessing
+    const rowIndex = square.row_index;
+    const colIndex = square.col_index;
+    const rowNumbers = contest.row_numbers as number[];
+    const colNumbers = contest.col_numbers as number[];
+
+    if (rowIndex < 0 || rowIndex >= rowNumbers.length || colIndex < 0 || colIndex >= colNumbers.length) {
+      console.warn(
+        `Skipping square with invalid indices: square_id=${square.id}, row_index=${rowIndex}, col_index=${colIndex}, ` +
+          `row_numbers.length=${rowNumbers.length}, col_numbers.length=${colNumbers.length}`
+      );
+      failCount++;
+      continue;
+    }
+
+    const rowNumber = rowNumbers[rowIndex];
+    const colNumber = colNumbers[colIndex];
+
+    // Extra safety check for undefined values (shouldn't happen after bounds check)
+    if (rowNumber === undefined || colNumber === undefined) {
+      console.warn(
+        `Skipping square with undefined numbers: square_id=${square.id}, row_index=${rowIndex}, col_index=${colIndex}, ` +
+          `rowNumber=${rowNumber}, colNumber=${colNumber}`
+      );
+      failCount++;
+      continue;
+    }
 
     const { subject, html } = generateNumbersRevealedEmail({
       participantName: square.claimant_first_name || 'Participant',
@@ -278,15 +321,15 @@ serve(async (req: Request) => {
 
       if (response.ok) {
         successCount++;
-        console.log(`Email sent to ${square.claimant_email}`);
+        console.log(`Email sent successfully for square_id=${square.id}`);
       } else {
         failCount++;
         const errorData = await response.text();
-        console.log(`Failed to send email to ${square.claimant_email}:`, errorData);
+        console.log(`Failed to send email for square_id=${square.id}:`, errorData);
       }
     } catch (error) {
       failCount++;
-      console.log(`Error sending email to ${square.claimant_email}:`, error);
+      console.log(`Error sending email for square_id=${square.id}:`, error);
     }
   }
 
