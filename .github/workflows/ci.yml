@@ -14,10 +14,12 @@ jobs:
     if: github.base_ref == 'main' && github.event_name == 'pull_request'
     steps:
       - name: Check if PR is from staging
+        env:
+          GITHUB_HEAD_REF: ${{ github.head_ref }}
         run: |
-          if [ "${{ github.head_ref }}" != "staging" ]; then
+          if [ "$GITHUB_HEAD_REF" != "staging" ]; then
             echo "❌ PRs to main must come from staging branch"
-            echo "Source branch: ${{ github.head_ref }}"
+            echo "Source branch: $GITHUB_HEAD_REF"
             exit 1
           fi
           echo "✅ PR is from staging branch"
@@ -25,6 +27,8 @@ jobs:
   build:
     name: Build & Lint
     runs-on: ubuntu-latest
+    needs: [check-source-branch]
+    if: ${{ always() && (needs.check-source-branch.result == 'success' || needs.check-source-branch.result == 'skipped') }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
