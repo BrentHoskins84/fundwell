@@ -2,15 +2,29 @@ name: CI
 
 on:
   pull_request:
-    branches: [main, dev]
+    branches: [main, staging]
   push:
-    branches: [dev]
+    branches: [staging]
 
 jobs:
+  # Block PRs to main that aren't from staging
+  check-source-branch:
+    name: Verify Source Branch
+    runs-on: ubuntu-latest
+    if: github.base_ref == 'main' && github.event_name == 'pull_request'
+    steps:
+      - name: Check if PR is from staging
+        run: |
+          if [ "${{ github.head_ref }}" != "staging" ]; then
+            echo "❌ PRs to main must come from staging branch"
+            echo "Source branch: ${{ github.head_ref }}"
+            exit 1
+          fi
+          echo "✅ PR is from staging branch"
+
   build:
     name: Build & Lint
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -29,7 +43,6 @@ jobs:
       - name: Build application
         run: bun run build
         env:
-          # Placeholder env vars for build (not real secrets)
           NEXT_PUBLIC_SUPABASE_URL: ${{ secrets.NEXT_PUBLIC_SUPABASE_URL }}
           NEXT_PUBLIC_SUPABASE_ANON_KEY: ${{ secrets.NEXT_PUBLIC_SUPABASE_ANON_KEY }}
           SUPABASE_SERVICE_ROLE_KEY: ${{ secrets.SUPABASE_SERVICE_ROLE_KEY }}
