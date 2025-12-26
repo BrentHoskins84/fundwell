@@ -22,12 +22,18 @@ reviews:
       - master
       - staging
 
+  tools:
+    eslint:
+      enabled: true
+    biome:
+      enabled: true
+
   path_instructions:
     - path: '**/*.{ts,tsx,js,jsx}'
       instructions: |
         ## Code Review Checklist
 
-        Focus on these high-impact rules. Style enforcement is handled by ESLint and Prettier.
+        Focus on these high-impact rules. Style enforcement is handled by ESLint/Biome.
         Full style guide: https://google.github.io/styleguide/tsguide.html
 
         ### 🔴 Critical Rules (flag these)
@@ -58,11 +64,12 @@ reviews:
         ### 🛠️ Automated Tooling
 
         These are enforced by tooling and don't need manual review:
-        - **Prettier**: Code formatting, Tailwind class sorting
-        - **ESLint**: Import ordering, unused variables, React best practices, Tailwind linting
-        - **TypeScript**: Strict mode type checking
+        - Formatting (Prettier)
+        - Import ordering
+        - Unused variables
+        - Consistent syntax style
 
-        ESLint and Prettier handle most style rules automatically via CI.
+        ESLint/Biome and TSConfig strict mode handle most style rules automatically.
 
 chat:
   auto_reply: true
