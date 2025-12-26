@@ -64,12 +64,12 @@ reviews:
         ### 🛠️ Automated Tooling
 
         These are enforced by tooling and don't need manual review:
-        - Formatting (Prettier)
+        - Formatting (handled by Biome)
         - Import ordering
         - Unused variables
         - Consistent syntax style
 
-        ESLint/Biome and TSConfig strict mode handle most style rules automatically.
+        ESLint, Biome, and TSConfig strict mode handle most style rules automatically.
 
 chat:
   auto_reply: true
