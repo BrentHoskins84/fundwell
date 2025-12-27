@@ -11,7 +11,7 @@ export default function PrivacyPage() {
             <h1 className="mb-4 text-4xl font-bold text-griddo-text md:text-5xl">
               Privacy Policy
             </h1>
-            <p className="mb-6 text-sm text-zinc-500">Last updated: December 27, 2024</p>
+            <p className="mb-6 text-sm text-zinc-500">Last updated: December 27, 2025</p>
             <p className="text-lg text-zinc-400">
               Your privacy is important to us. This policy explains how we collect, use, and
               protect your information.
@@ -19,7 +19,6 @@ export default function PrivacyPage() {
           </div>
         </Container>
       </section>
-
       <section className="pb-20">
         <Container>
           <div className="mx-auto max-w-4xl">
@@ -43,7 +42,7 @@ export default function PrivacyPage() {
                 How We Use Your Information
               </h2>
               <p className="mb-4 leading-relaxed text-zinc-400">
-                We use your information to provide and improve Griddo's services. This includes
+                We use your information to provide and improve Griddo&apos;s services. This includes
                 displaying your contests, sending email notifications through Resend when numbers
                 are revealed or winners are announced, and helping you manage your fundraisers.
               </p>
@@ -106,7 +105,7 @@ export default function PrivacyPage() {
                 <Link href="/support" className="text-griddo-primary hover:underline">
                   support page
                 </Link>
-                . We're happy to help.
+                . We&apos;re happy to help.
               </p>
             </div>
           </div>

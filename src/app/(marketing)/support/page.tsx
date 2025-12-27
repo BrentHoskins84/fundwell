@@ -32,7 +32,7 @@ function FAQSection() {
     {
       question: 'How do I create a contest?',
       answer:
-        'Sign up for an account, then click "Create Contest" from your dashboard. Give your contest a name, choose your sport, set the price per square, and add your payment options. Your contest will be ready to share in minutes.',
+        'Sign up for an account, then click &quot;Create Contest&quot; from your dashboard. Give your contest a name, choose your sport, set the price per square, and add your payment options. Your contest will be ready to share in minutes.',
     },
     {
       question: 'How do participants claim squares?',
@@ -47,7 +47,7 @@ function FAQSection() {
     {
       question: 'How are winners determined?',
       answer:
-        'Once all squares are claimed, you\'ll assign random numbers to each row and column. During the game, enter the scores for each quarter. Griddo automatically highlights the winning squares based on the last digit of each team\'s score.',
+        'Once all squares are claimed, you&apos;ll assign random numbers to each row and column. During the game, enter the scores for each quarter. Griddo automatically highlights the winning squares based on the last digit of each team&apos;s score.',
     },
     {
       question: 'Can I customize my contest?',
@@ -55,9 +55,9 @@ function FAQSection() {
         'Yes! You can add your team logos, customize colors, set your own payout structure, and configure how many squares each person can claim. Make it yours.',
     },
     {
-      question: "What's included in the free plan?",
+      question: "What&apos;s included in the free plan?",
       answer:
-        'The free plan lets you run one contest at a time with all core features included. You\'ll see a few small ads on your contest page. Upgrade to remove ads and run multiple contests simultaneously.',
+        'The free plan lets you run one contest at a time with all core features included. You&apos;ll see a few small ads on your contest page. Upgrade to remove ads and run multiple contests simultaneously.',
     },
   ];
 
@@ -89,7 +89,7 @@ function ContactSection() {
         <div className="mx-auto max-w-3xl rounded-xl border border-zinc-800 bg-griddo-surface/50 p-8 text-center">
           <h2 className="mb-4 text-2xl font-bold text-griddo-text">Still need help?</h2>
           <p className="mb-6 text-zinc-400">
-            Send us a message and we'll get back to you as soon as possible.
+            Send us a message and we&apos;ll get back to you as soon as possible.
           </p>
           <p className="text-griddo-primary">
             Email us at{' '}

@@ -11,7 +11,7 @@ export default function TermsPage() {
             <h1 className="mb-4 text-4xl font-bold text-griddo-text md:text-5xl">
               Terms of Service
             </h1>
-            <p className="mb-6 text-sm text-zinc-500">Last updated: December 27, 2024</p>
+            <p className="mb-6 text-sm text-zinc-500">Last updated: December 27, 2025</p>
             <p className="text-lg text-zinc-400">
               By using Griddo, you agree to these terms. Please read them carefully.
             </p>
@@ -93,7 +93,7 @@ export default function TermsPage() {
                 defraud participants.
               </p>
               <p className="mb-4 leading-relaxed text-zinc-400">
-                You may not attempt to access other users' accounts, interfere with the service, or
+                You may not attempt to access other users&apos; accounts, interfere with the service, or
                 use automated tools to scrape or interact with our platform without permission.
               </p>
             </div>
@@ -114,7 +114,7 @@ export default function TermsPage() {
             <div className="mb-12">
               <h2 className="mb-4 text-2xl font-bold text-griddo-text">Limitation of Liability</h2>
               <p className="mb-4 leading-relaxed text-zinc-400">
-                Griddo is provided "as is" without warranties of any kind. We do not guarantee that
+                Griddo is provided &quot;as is&quot; without warranties of any kind. We do not guarantee that
                 the service will be available at all times or that it will be free of errors.
               </p>
               <p className="mb-4 leading-relaxed text-zinc-400">
@@ -140,7 +140,7 @@ export default function TermsPage() {
                 <Link href="/support" className="text-griddo-primary hover:underline">
                   support page
                 </Link>
-                . We're here to help.
+                . We&apos;re here to help.
               </p>
             </div>
           </div>

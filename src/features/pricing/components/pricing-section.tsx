@@ -25,7 +25,7 @@ export async function PricingSection({ isPricingPage }: { isPricingPage?: boolea
           Find a plan that fits you. Upgrade at any time to enable additional features.
         </p>
         <p className="mx-auto mb-8 max-w-2xl text-center text-zinc-400">
-          We offer a free plan so anyone can run a fundraiser—you'll see a few small ads and can
+          We offer a free plan so anyone can run a fundraiser—you&apos;ll see a few small ads and can
           host one contest at a time. Our paid plans remove ads and unlock more features. We price
           them to cover our costs, not to maximize profit, because our goal is keeping Griddo
           accessible for everyone.
