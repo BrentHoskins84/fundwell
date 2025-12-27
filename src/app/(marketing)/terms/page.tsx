@@ -3,7 +3,7 @@ import Link from 'next/link';
 
 import { Container } from '@/components/container';
 
-export function TermsPage(): React.ReactElement {
+export default function TermsPage(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <section className="py-20">

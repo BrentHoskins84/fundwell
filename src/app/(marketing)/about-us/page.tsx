@@ -5,7 +5,7 @@ import { Eye, GraduationCap, Heart, Trophy, Users, Zap } from 'lucide-react';
 import { Container } from '@/components/container';
 import { Button } from '@/components/ui/button';
 
-export function AboutUsPage(): React.ReactElement {
+export default function AboutUsPage(): React.ReactElement {
   return (
     <div className="flex flex-col">
       <HeroSection />
