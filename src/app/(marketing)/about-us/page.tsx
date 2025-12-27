@@ -71,8 +71,8 @@ function StorySection() {
               raising funds and bringing your community together.
             </p>
             <p>
-              That's why we offer a free plan—you can run one contest at a time and only see a few
-              ads. Our paid plans are intentionally affordable because we're not here to make a
+              That&apos;s why we offer a free plan—you can run one contest at a time and only see a few
+              ads. Our paid plans are intentionally affordable because we&apos;re not here to make a
               fortune. We just want to cover our server costs and keep Griddo running for everyone
               who needs it.
             </p>
