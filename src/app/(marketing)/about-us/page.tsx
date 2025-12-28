@@ -1,9 +1,9 @@
-import { Eye, GraduationCap, Heart, Trophy, Users, Zap } from 'lucide-react';
 import Link from 'next/link';
 import type { ReactElement } from 'react';
+import { Eye, GraduationCap, Heart, Trophy, Users, Zap } from 'lucide-react';
 
-import { Container } from '@/components/container';
 import { Button } from '@/components/ui/button';
+import { Container } from '@/components/container';
 
 export default function AboutUsPage(): ReactElement {
   return (
