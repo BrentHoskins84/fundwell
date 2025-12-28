@@ -97,7 +97,13 @@ export default function NewContestPage() {
         });
       }
       // If successful, the server action redirects to the contest page
-    } catch {
+    } catch (error) {
+      // Check if this is a Next.js redirect - if so, let it propagate
+      if (error && typeof error === 'object' && 'digest' in error) {
+        throw error; // Re-throw redirect errors
+      }
+
+      // Only show toast for actual errors
       toast({
         variant: 'destructive',
         title: 'Error',
