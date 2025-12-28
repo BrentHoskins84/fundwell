@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { IoLogoGoogle } from 'react-icons/io5';
 import { useForm } from 'react-hook-form';
+import { IoLogoGoogle } from 'react-icons/io5';
 import { z } from 'zod';
 
 import { Logo } from '@/components/logo';
