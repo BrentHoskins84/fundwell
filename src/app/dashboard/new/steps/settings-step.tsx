@@ -66,29 +66,31 @@ export function SettingsStep() {
   } = useFormContext<CreateContestInput>();
 
   const [showPin, setShowPin] = useState(false);
+  const [hasGeneratedPin, setHasGeneratedPin] = useState(false);
 
   const sportType = useWatch({ control, name: 'sportType' }) as SportType;
   const squarePrice = useWatch({ control, name: 'squarePrice' });
   const requirePin = useWatch({ control, name: 'requirePin' });
   const accessPin = useWatch({ control, name: 'accessPin' });
 
-  // Auto-generate PIN when toggle is turned on
+  // Auto-generate PIN when toggle is turned on (only once, not when user is editing)
   useEffect(() => {
-    if (requirePin && !accessPin) {
+    if (requirePin && !accessPin && !hasGeneratedPin) {
       setValue('accessPin', generateRandomPin());
+      setHasGeneratedPin(true);
     }
-  }, [requirePin, accessPin, setValue]);
+  }, [requirePin, accessPin, hasGeneratedPin, setValue]);
 
   const handleGeneratePin = () => {
     setValue('accessPin', generateRandomPin());
+    setHasGeneratedPin(true);
   };
 
   const handleRequirePinChange = (checked: boolean) => {
     setValue('requirePin', checked);
-    if (checked && !accessPin) {
-      setValue('accessPin', generateRandomPin());
-    } else if (!checked) {
+    if (!checked) {
       setValue('accessPin', undefined);
+      setHasGeneratedPin(false);
     }
   };
 
