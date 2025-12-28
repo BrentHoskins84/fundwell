@@ -1,19 +1,38 @@
-import Image from 'next/image';
+import { ReactElement } from 'react';
 import Link from 'next/link';
 
-export function Logo() {
+import { cn } from '@/utils/cn';
+
+interface LogoProps {
+  href?: string;
+  className?: string;
+  size?: 'sm' | 'md' | 'lg';
+}
+
+export function Logo({ href = '/', className = '', size = 'lg' }: LogoProps): ReactElement {
+  const sizeClasses = {
+    sm: 'text-lg',
+    md: 'text-xl',
+    lg: 'text-2xl',
+  };
+
+  const content = (
+    <span className={cn('bg-gradient-to-r from-fundwell-primary to-fundwell-accent bg-clip-text font-alt font-bold text-transparent', sizeClasses[size])}>
+      Fundwell
+    </span>
+  );
+
+  if (href) {
+    return (
+      <Link href={href} className={cn('flex w-fit items-center gap-2', className)}>
+        {content}
+      </Link>
+    );
+  }
+
   return (
-    <Link href='/' className='flex w-fit items-center gap-2'>
-      {/* Logo image - commented out for now, can be added back later */}
-      {/* <Image
-        src='/logo.png'
-        width={40}
-        height={40}
-        priority
-        quality={100}
-        alt='Fundwell logo mark'
-      /> */}
-      <span className='bg-gradient-to-r from-fundwell-primary to-fundwell-accent bg-clip-text font-alt text-2xl font-bold text-transparent'>Fundwell</span>
-    </Link>
+    <div className={cn('flex w-fit items-center gap-2', className)}>
+      {content}
+    </div>
   );
 }
