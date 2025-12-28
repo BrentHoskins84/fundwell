@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { CircleUser } from 'lucide-react';
 
 import {
@@ -11,31 +10,13 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { ActionResponse } from '@/types/action-response';
+import { signOut } from '@/features/auth/auth-actions';
 
-import { useToast } from './ui/use-toast';
+async function handleSignOut() {
+  await signOut();
+}
 
-export function AccountMenu({ signOut }: { signOut: () => Promise<ActionResponse> }) {
-  const router = useRouter();
-  const { toast } = useToast();
-
-  async function handleLogoutClick() {
-    const response = await signOut();
-
-    if (response?.error) {
-      toast({
-        variant: 'destructive',
-        description: 'An error occurred while logging out. Please try again or contact support.',
-      });
-    } else {
-      toast({
-        description: 'You have been logged out.',
-      });
-
-      router.push('/');
-    }
-  }
-
+export function AccountMenu() {
   return (
     <DropdownMenu>
       <DropdownMenuTrigger className='rounded-full'>
@@ -45,7 +26,13 @@ export function AccountMenu({ signOut }: { signOut: () => Promise<ActionResponse
         <DropdownMenuItem asChild>
           <Link href='/account'>Account</Link>
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={handleLogoutClick}>Log Out</DropdownMenuItem>
+        <DropdownMenuItem asChild className='cursor-pointer p-0'>
+          <form action={handleSignOut} className='w-full'>
+            <button type='submit' className='w-full px-2 py-1.5 text-left'>
+              Log Out
+            </button>
+          </form>
+        </DropdownMenuItem>
         <DropdownMenuArrow className='me-4 fill-white' />
       </DropdownMenuContent>
     </DropdownMenu>
