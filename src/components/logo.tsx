@@ -24,14 +24,14 @@ export function Logo({ href = '/', className = '', size = 'lg' }: LogoProps): Re
 
   if (href) {
     return (
-      <Link href={href} className={`flex w-fit items-center gap-2 ${className}`}>
+      <Link href={href} className={cn('flex w-fit items-center gap-2', className)}>
         {content}
       </Link>
     );
   }
 
   return (
-    <div className={`flex w-fit items-center gap-2 ${className}`}>
+    <div className={cn('flex w-fit items-center gap-2', className)}>
       {content}
     </div>
   );
