@@ -1,19 +1,17 @@
 import z from 'zod';
 
-export const priceCardVariantSchema = z.enum(['basic', 'pro', 'enterprise']);
+export const priceCardVariantSchema = z.enum(['free', 'pro']);
 
 export const productMetadataSchema = z
   .object({
     price_card_variant: priceCardVariantSchema,
     active_contests: z.string(),
-    customization: z.enum(['basic', 'advanced', 'white-label']),
-    support: z.enum(['email', 'live', 'dedicated']),
+    has_ads: z.string(),
   })
   .transform((data) => ({
     priceCardVariant: data.price_card_variant,
     activeContests: data.active_contests,
-    customization: data.customization,
-    support: data.support,
+    hasAds: data.has_ads === 'true',
   }));
 
 export type ProductMetadata = z.infer<typeof productMetadataSchema>;

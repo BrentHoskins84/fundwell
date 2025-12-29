@@ -46,9 +46,8 @@ export function PricingCard({
   const isBillingIntervalYearly = billingInterval === 'year';
   const metadata = productMetadataSchema.parse(product.metadata);
   const buttonVariantMap = {
-    basic: 'default',
+    free: 'default',
     pro: 'sexy',
-    enterprise: 'orange',
   } as const;
 
   function handleBillingIntervalChange(billingInterval: BillingInterval) {
@@ -65,8 +64,8 @@ export function PricingCard({
               {yearPrice && isBillingIntervalYearly
                 ? '$' + yearPrice / 100
                 : monthPrice
-                ? '$' + monthPrice / 100
-                : 'Custom'}
+                  ? '$' + monthPrice / 100
+                  : 'Custom'}
             </span>
             <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span>
           </div>
@@ -78,24 +77,7 @@ export function PricingCard({
           <CheckItem
             text={metadata.activeContests === '1' ? '1 active contest' : 'Unlimited contests'}
           />
-          <CheckItem
-            text={
-              metadata.customization === 'basic'
-                ? 'Basic customization'
-                : metadata.customization === 'advanced'
-                  ? 'Advanced branding'
-                  : 'White-label branding'
-            }
-          />
-          <CheckItem
-            text={
-              metadata.support === 'email'
-                ? 'Email support'
-                : metadata.support === 'live'
-                  ? 'Live chat support'
-                  : 'Dedicated support'
-            }
-          />
+          <CheckItem text={metadata.hasAds ? 'Non-obtrusive ads' : 'No ads'} />
         </div>
 
         {createCheckoutAction && (
