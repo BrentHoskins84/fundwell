@@ -73,8 +73,6 @@ export async function createContest(input: CreateContestInput, retryCount = 0): 
   const slug = generateSlug(data.name, uniqueId);
 
   // Insert contest into database
-  // Note: sport_type and baseball payout columns require migrations to be applied
-  // TODO: After running migrations, add: sport_type, payout_game_1-7_percent
   const { data: contest, error: insertError } = await supabase
     .from('contests')
     .insert({
@@ -83,6 +81,7 @@ export async function createContest(input: CreateContestInput, retryCount = 0): 
       slug,
       name: data.name,
       description: data.description || null,
+      sport_type: data.sportType,
       row_team_name: data.rowTeamName,
       col_team_name: data.colTeamName,
       square_price: data.squarePrice,
@@ -92,6 +91,14 @@ export async function createContest(input: CreateContestInput, retryCount = 0): 
       payout_q2_percent: data.payoutQ2Percent,
       payout_q3_percent: data.payoutQ3Percent,
       payout_final_percent: data.payoutFinalPercent,
+      // Baseball payouts
+      payout_game1_percent: data.payoutGame1Percent,
+      payout_game2_percent: data.payoutGame2Percent,
+      payout_game3_percent: data.payoutGame3Percent,
+      payout_game4_percent: data.payoutGame4Percent,
+      payout_game5_percent: data.payoutGame5Percent,
+      payout_game6_percent: data.payoutGame6Percent,
+      payout_game7_percent: data.payoutGame7Percent,
       hero_image_url: data.heroImageUrl || null,
       org_image_url: data.orgImageUrl || null,
       primary_color: data.primaryColor,

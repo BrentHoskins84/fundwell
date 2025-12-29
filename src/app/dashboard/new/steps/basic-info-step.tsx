@@ -1,15 +1,22 @@
 'use client';
 
 import { useFormContext, useWatch } from 'react-hook-form';
-import { IoAmericanFootball, IoBaseball } from 'react-icons/io5';
+import { IoAmericanFootball, IoBaseball, IoTicket } from 'react-icons/io5';
 
+import { Badge } from '@/components/ui/badge';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { CreateContestInput, SportType } from '@/features/contests/models/contest';
 import { cn } from '@/utils/cn';
 
-const SPORT_OPTIONS: { value: SportType; label: string; icon: typeof IoAmericanFootball; placeholder: { row: string; col: string } }[] = [
+const SPORT_OPTIONS: {
+  value: SportType | 'raffle';
+  label: string;
+  icon: typeof IoAmericanFootball;
+  placeholder: { row: string; col: string };
+  comingSoon?: boolean;
+}[] = [
   {
     value: 'football',
     label: 'Football',
@@ -21,6 +28,14 @@ const SPORT_OPTIONS: { value: SportType; label: string; icon: typeof IoAmericanF
     label: 'Baseball',
     icon: IoBaseball,
     placeholder: { row: 'New York Yankees', col: 'Los Angeles Dodgers' },
+    comingSoon: true,
+  },
+  {
+    value: 'raffle',
+    label: 'Raffle Fundraiser',
+    icon: IoTicket,
+    placeholder: { row: 'Team 1', col: 'Team 2' },
+    comingSoon: true,
   },
 ];
 
@@ -49,31 +64,46 @@ export function BasicInfoStep() {
         <Label className="text-zinc-200">
           Sport Type <span className="text-orange-500">*</span>
         </Label>
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-3 gap-3">
           {SPORT_OPTIONS.map((sport) => {
             const isSelected = sportType === sport.value;
             const Icon = sport.icon;
+            const isDisabled = sport.comingSoon;
             return (
               <button
                 key={sport.value}
                 type="button"
-                onClick={() => setValue('sportType', sport.value, { shouldValidate: true })}
+                onClick={() => {
+                  if (!isDisabled && sport.value !== 'raffle') {
+                    setValue('sportType', sport.value as SportType, { shouldValidate: true });
+                  }
+                }}
+                disabled={isDisabled}
                 className={cn(
-                  'flex items-center gap-3 rounded-lg border-2 p-4 transition-all',
+                  'relative rounded-lg border-2 p-4 py-6 transition-all',
+                  isDisabled && 'cursor-not-allowed opacity-60',
                   isSelected
                     ? 'border-orange-500 bg-orange-500/10 text-white'
-                    : 'border-zinc-700 bg-zinc-800/50 text-zinc-400 hover:border-zinc-600 hover:text-zinc-200'
+                    : 'border-zinc-700 bg-zinc-800/50 text-zinc-400',
+                  !isDisabled && !isSelected && 'hover:border-zinc-600 hover:text-zinc-200'
                 )}
               >
-                <div
-                  className={cn(
-                    'flex h-10 w-10 items-center justify-center rounded-full',
-                    isSelected ? 'bg-orange-500' : 'bg-zinc-700'
-                  )}
-                >
-                  <Icon className="h-5 w-5 text-white" />
+                {isDisabled && (
+                  <Badge variant="coming_soon" className="absolute right-2 top-2 text-[10px]">
+                    Coming Soon
+                  </Badge>
+                )}
+                <div className="flex items-center gap-3">
+                  <div
+                    className={cn(
+                      'flex h-10 w-10 items-center justify-center rounded-full',
+                      isSelected ? 'bg-orange-500' : 'bg-zinc-700'
+                    )}
+                  >
+                    <Icon className="h-5 w-5 text-white" />
+                  </div>
+                  <span className="text-sm font-medium">{sport.label}</span>
                 </div>
-                <span className="text-sm font-medium">{sport.label}</span>
               </button>
             );
           })}
