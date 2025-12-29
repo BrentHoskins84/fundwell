@@ -99,12 +99,16 @@ Checks:
 
 Same as above, plus:
 
-| Variable                             | Description                                |
-| ------------------------------------ | ------------------------------------------ |
-| `NEXT_PUBLIC_SITE_URL`               | Production URL (https://fundwell.vercel.app) |
-| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key                          |
-| `STRIPE_SECRET_KEY`                  | Stripe secret key                          |
-| `STRIPE_WEBHOOK_SECRET`              | Stripe webhook signing secret              |
+| Variable                             | Description                                       |
+| ------------------------------------ | ------------------------------------------------- |
+| `NEXT_PUBLIC_SITE_URL`               | Production URL (https://fundwell.vercel.app)      |
+| `NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY` | Stripe public key                                 |
+| `STRIPE_SECRET_KEY`                  | Stripe secret key                                 |
+| `STRIPE_WEBHOOK_SECRET`              | Stripe webhook signing secret                     |
+| `SENTRY_DSN`                         | Sentry DSN for server/edge error tracking         |
+| `NEXT_PUBLIC_SENTRY_DSN`             | Sentry DSN for client error tracking              |
+| `SENTRY_SEND_PII`                    | Set to `true` to enable PII in Sentry (server)    |
+| `NEXT_PUBLIC_SENTRY_SEND_PII`        | Set to `true` to enable PII in Sentry (client)    |
 
 ---
 

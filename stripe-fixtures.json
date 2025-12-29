@@ -14,7 +14,6 @@
           "price_card_variant": "free",
           "active_contests": "1",
           "customization": "basic",
-          "support": "email",
           "has_ads": "true"
         }
       }
@@ -30,7 +29,6 @@
           "price_card_variant": "pro",
           "active_contests": "unlimited",
           "customization": "advanced",
-          "support": "live",
           "has_ads": "false"
         }
       }
