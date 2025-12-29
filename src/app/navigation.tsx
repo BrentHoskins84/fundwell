@@ -5,7 +5,7 @@ import { AccountMenu } from '@/components/account-menu';
 import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetDescription, SheetHeader, SheetTrigger } from '@/components/ui/sheet';
-import { getUser } from '@/features/account/controllers/get-session';
+import { getUser } from '@/features/account/controllers/get-user';
 
 export async function Navigation() {
   const user = await getUser();
