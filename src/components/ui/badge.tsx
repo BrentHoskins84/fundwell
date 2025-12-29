@@ -18,6 +18,7 @@ const badgeVariants = cva(
         locked: 'border-transparent bg-yellow-500/20 text-yellow-400',
         in_progress: 'border-transparent bg-orange-500/20 text-orange-400',
         completed: 'border-transparent bg-blue-500/20 text-blue-400',
+        coming_soon: 'border-transparent bg-blue-500/20 text-blue-400',
       },
     },
     defaultVariants: {

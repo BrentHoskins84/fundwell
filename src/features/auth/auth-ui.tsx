@@ -1,20 +1,30 @@
 'use client';
 
-import { FormEvent, useState } from 'react';
-import Image from 'next/image';
+import { useState } from 'react';
 import Link from 'next/link';
+import { useForm } from 'react-hook-form';
 import { IoLogoGoogle } from 'react-icons/io5';
+import { z } from 'zod';
 
+import { Logo } from '@/components/logo';
 import { Button } from '@/components/ui/button';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from '@/components/ui/use-toast';
 import { ActionResponse } from '@/types/action-response';
+import { zodResolver } from '@hookform/resolvers/zod';
 
 const titleMap = {
   login: 'Login to Fundwell',
   signup: 'Join Fundwell and start hosting your game day fundraiser',
 } as const;
+
+const emailFormSchema = z.object({
+  email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
+});
+
+type EmailFormData = z.infer<typeof emailFormSchema>;
 
 export function AuthUI({
   mode,
@@ -28,12 +38,21 @@ export function AuthUI({
   const [pending, setPending] = useState(false);
   const [emailFormOpen, setEmailFormOpen] = useState(false);
 
-  async function handleEmailSubmit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  const {
+    register,
+    handleSubmit,
+    formState: { errors },
+    reset,
+  } = useForm<EmailFormData>({
+    resolver: zodResolver(emailFormSchema),
+    defaultValues: {
+      email: '',
+    },
+  });
+
+  async function onSubmit(data: EmailFormData) {
     setPending(true);
-    const form = event.target as HTMLFormElement;
-    const email = form['email'].value;
-    const response = await signInWithEmail(email);
+    const response = await signInWithEmail(data.email);
 
     if (response?.error) {
       toast({
@@ -42,11 +61,11 @@ export function AuthUI({
       });
     } else {
       toast({
-        description: `To continue, click the link in the email sent to: ${email}`,
+        description: `To continue, click the link in the email sent to: ${data.email}`,
       });
     }
 
-    form.reset();
+    reset();
     setPending(false);
   }
 
@@ -64,45 +83,63 @@ export function AuthUI({
   }
 
   return (
-    <section className='mt-16 flex w-full flex-col gap-16 rounded-lg bg-black p-10 px-4 text-center'>
+    <section className='relative mt-16 flex w-full flex-col gap-12 overflow-hidden rounded-2xl border border-zinc-800 bg-gradient-to-br from-fundwell-surface/80 to-fundwell-background p-8 text-center md:p-12'>
+      {/* Background decorative elements */}
+      <div className='absolute inset-0 -z-10'>
+        <div className='absolute right-0 top-0 h-[300px] w-[300px] rounded-full bg-fundwell-primary/10 blur-3xl' />
+        <div className='absolute bottom-0 left-0 h-[250px] w-[250px] rounded-full bg-fundwell-accent/10 blur-3xl' />
+      </div>
+
       <div className='flex flex-col gap-4'>
-        <Image src='/logo.png' width={80} height={80} alt='' className='m-auto' />
-        <h1 className='text-lg'>{titleMap[mode]}</h1>
+        <Logo size='lg' className='m-auto' />
+        <h1 className='text-2xl font-bold text-fundwell-text md:text-3xl'>{titleMap[mode]}</h1>
       </div>
       <div className='flex flex-col gap-4'>
-        <button
-          className='flex items-center justify-center gap-2 rounded-md bg-cyan-500 py-4 font-medium text-black transition-all hover:bg-cyan-400 disabled:bg-neutral-700'
+        <Button
+          variant='orange'
+          size='lg'
+          className='w-full gap-2 text-base font-semibold'
           onClick={() => handleOAuthClick('google')}
           disabled={pending}
         >
           <IoLogoGoogle size={20} />
           Continue with Google
-        </button>
+        </Button>
 
         <Collapsible open={emailFormOpen} onOpenChange={setEmailFormOpen}>
           <CollapsibleTrigger asChild>
-            <button
-              className='text-neutral6 flex w-full items-center justify-center gap-2 rounded-md bg-zinc-900 py-4 font-medium transition-all hover:bg-zinc-800 disabled:bg-neutral-700 disabled:text-black'
+            <Button
+              variant='outline'
+              size='lg'
+              className='w-full text-base'
               disabled={pending}
             >
               Continue with Email
-            </button>
+            </Button>
           </CollapsibleTrigger>
           <CollapsibleContent>
-            <div className='mt-[-2px] w-full rounded-b-md bg-zinc-900 p-8'>
-              <form onSubmit={handleEmailSubmit}>
-                <Input
-                  type='email'
-                  name='email'
-                  placeholder='Enter your email'
-                  aria-label='Enter your email'
-                  autoFocus
-                />
-                <div className='mt-4 flex justify-end gap-2'>
-                  <Button type='button' onClick={() => setEmailFormOpen(false)}>
+            <div className='mt-[-2px] w-full rounded-b-md border border-t-0 border-zinc-700 bg-zinc-800/50 p-6'>
+              <form onSubmit={handleSubmit(onSubmit)} className='space-y-4'>
+                <div className='space-y-2 text-left'>
+                  <Label htmlFor='email'>Email address</Label>
+                  <Input
+                    id='email'
+                    type='email'
+                    placeholder='Enter your email'
+                    aria-label='Enter your email'
+                    autoFocus
+                    {...register('email')}
+                    className={errors.email ? 'border-red-500' : ''}
+                  />
+                  {errors.email && (
+                    <p className='text-sm text-red-500'>{errors.email.message}</p>
+                  )}
+                </div>
+                <div className='flex justify-end gap-2 pt-2'>
+                  <Button type='button' onClick={() => setEmailFormOpen(false)} disabled={pending}>
                     Cancel
                   </Button>
-                  <Button variant='secondary' type='submit'>
+                  <Button variant='orange' type='submit' disabled={pending}>
                     Submit
                   </Button>
                 </div>
@@ -112,13 +149,13 @@ export function AuthUI({
         </Collapsible>
       </div>
       {mode === 'signup' && (
-        <span className='text-neutral5 m-auto max-w-sm text-sm'>
+        <span className='m-auto max-w-sm text-sm text-zinc-400'>
           By clicking continue, you agree to our{' '}
-          <Link href='/terms' className='underline'>
+          <Link href='/terms' className='underline transition-colors hover:text-fundwell-primary'>
             Terms of Service
           </Link>{' '}
           and{' '}
-          <Link href='/privacy' className='underline'>
+          <Link href='/privacy' className='underline transition-colors hover:text-fundwell-primary'>
             Privacy Policy
           </Link>
           .

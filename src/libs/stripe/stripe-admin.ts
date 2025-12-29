@@ -8,7 +8,7 @@ export const stripeAdmin = new Stripe(getEnvVar(process.env.STRIPE_SECRET_KEY, '
   // Register this as an official Stripe plugin.
   // https://stripe.com/docs/building-plugins#setappinfo
   appInfo: {
-    name: 'Griddo',
+    name: 'Fundwell',
     version: '0.1.0',
   },
 });

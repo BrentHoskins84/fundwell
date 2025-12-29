@@ -7,6 +7,7 @@ import { Check } from 'lucide-react';
 import { SexyBorder } from '@/components/sexy-border';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { cn } from '@/utils/cn';
 
 import { PriceCardVariant, productMetadataSchema } from '../models/product-metadata';
 import { BillingInterval, Price, ProductWithPrices } from '../types';
@@ -46,9 +47,8 @@ export function PricingCard({
   const isBillingIntervalYearly = billingInterval === 'year';
   const metadata = productMetadataSchema.parse(product.metadata);
   const buttonVariantMap = {
-    basic: 'default',
+    free: 'default',
     pro: 'sexy',
-    enterprise: 'orange',
   } as const;
 
   function handleBillingIntervalChange(billingInterval: BillingInterval) {
@@ -65,8 +65,8 @@ export function PricingCard({
               {yearPrice && isBillingIntervalYearly
                 ? '$' + yearPrice / 100
                 : monthPrice
-                ? '$' + monthPrice / 100
-                : 'Custom'}
+                  ? '$' + monthPrice / 100
+                  : 'Custom'}
             </span>
             <span>{yearPrice && isBillingIntervalYearly ? '/year' : monthPrice ? '/month' : null}</span>
           </div>
@@ -78,29 +78,12 @@ export function PricingCard({
           <CheckItem
             text={metadata.activeContests === '1' ? '1 active contest' : 'Unlimited contests'}
           />
-          <CheckItem
-            text={
-              metadata.customization === 'basic'
-                ? 'Basic customization'
-                : metadata.customization === 'advanced'
-                  ? 'Advanced branding'
-                  : 'White-label branding'
-            }
-          />
-          <CheckItem
-            text={
-              metadata.support === 'email'
-                ? 'Email support'
-                : metadata.support === 'live'
-                  ? 'Live chat support'
-                  : 'Dedicated support'
-            }
-          />
+          <CheckItem text={metadata.hasAds ? 'Non-obtrusive ads' : 'No ads'} />
         </div>
 
         {createCheckoutAction && (
           <div className='py-4'>
-            {currentPrice && (
+            {currentPrice && currentPrice.unit_amount !== 0 ? (
               <Button
                 variant={buttonVariantMap[metadata.priceCardVariant]}
                 className='w-full'
@@ -108,11 +91,12 @@ export function PricingCard({
               >
                 Get Started
               </Button>
-            )}
-            {!currentPrice && (
+            ) : !currentPrice ? (
               <Button variant={buttonVariantMap[metadata.priceCardVariant]} className='w-full' asChild>
                 <Link href='/contact'>Contact Us</Link>
               </Button>
+            ) : (
+              <div className='h-10' />
             )}
           </div>
         )}
@@ -142,7 +126,11 @@ export function WithSexyBorder({
       </SexyBorder>
     );
   } else {
-    return <div className={className}>{children}</div>;
+    return (
+      <div className={cn('rounded-md border-2 border-zinc-800', className)}>
+        {children}
+      </div>
+    );
   }
 }
 

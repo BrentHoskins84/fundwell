@@ -4,47 +4,17 @@
   },
   "fixtures": [
     {
-      "name": "basic",
+      "name": "free",
       "path": "/v1/products",
       "method": "post",
       "params": {
-        "name": "Basic",
-        "description": "Perfect for getting started with your first fundraiser.",
+        "name": "Free",
+        "description": "Get started with one contest at a time.",
         "metadata": {
-          "price_card_variant": "basic",
+          "price_card_variant": "free",
           "active_contests": "1",
           "customization": "basic",
-          "support": "email"
-        }
-      }
-    },
-    {
-      "name": "price_basic_month",
-      "path": "/v1/prices",
-      "method": "post",
-      "params": {
-        "product": "${basic:id}",
-        "currency": "usd",
-        "billing_scheme": "per_unit",
-        "unit_amount": 500,
-        "recurring": {
-          "interval": "month",
-          "interval_count": 1
-        }
-      }
-    },
-    {
-      "name": "price_basic_year",
-      "path": "/v1/prices",
-      "method": "post",
-      "params": {
-        "product": "${basic:id}",
-        "currency": "usd",
-        "billing_scheme": "per_unit",
-        "unit_amount": 5000,
-        "recurring": {
-          "interval": "year",
-          "interval_count": 1
+          "has_ads": "true"
         }
       }
     },
@@ -54,27 +24,12 @@
       "method": "post",
       "params": {
         "name": "Pro",
-        "description": "For organizations running multiple fundraisers.",
+        "description": "Run multiple contests without ads.",
         "metadata": {
           "price_card_variant": "pro",
           "active_contests": "unlimited",
           "customization": "advanced",
-          "support": "live"
-        }
-      }
-    },
-    {
-      "name": "price_pro_month",
-      "path": "/v1/prices",
-      "method": "post",
-      "params": {
-        "product": "${pro:id}",
-        "currency": "usd",
-        "billing_scheme": "per_unit",
-        "unit_amount": 1000,
-        "recurring": {
-          "interval": "month",
-          "interval_count": 1
+          "has_ads": "false"
         }
       }
     },
@@ -86,25 +41,10 @@
         "product": "${pro:id}",
         "currency": "usd",
         "billing_scheme": "per_unit",
-        "unit_amount": 10000,
+        "unit_amount": 4999,
         "recurring": {
           "interval": "year",
           "interval_count": 1
-        }
-      }
-    },
-    {
-      "name": "enterprise",
-      "path": "/v1/products",
-      "method": "post",
-      "params": {
-        "name": "Enterprise",
-        "description": "For large organizations with custom needs.",
-        "metadata": {
-          "price_card_variant": "enterprise",
-          "active_contests": "unlimited",
-          "customization": "white-label",
-          "support": "dedicated"
         }
       }
     }
