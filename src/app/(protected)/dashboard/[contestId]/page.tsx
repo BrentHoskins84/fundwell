@@ -120,7 +120,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           </div>
 
           <div className="flex shrink-0 gap-2">
-            <CopyLinkButton url={publicUrl} code={contest.code} contestName={contest.name} />
+            <CopyLinkButton url={publicUrl} code={contest.access_pin} contestName={contest.name} />
             <Button variant="default" size="sm" asChild>
               <Link href={`/dashboard/${contestId}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />

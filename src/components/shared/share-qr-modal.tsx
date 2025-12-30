@@ -17,7 +17,7 @@ interface ShareQrModalProps {
   isOpen: boolean;
   onClose: () => void;
   contestUrl: string;
-  contestCode: string;
+  contestCode: string | null;
   contestName: string;
 }
 
@@ -71,13 +71,15 @@ export function ShareQrModal({ isOpen, onClose, contestUrl, contestCode, contest
             />
           </div>
 
-          {/* Contest Code */}
-          <div className="rounded-lg bg-zinc-800 px-6 py-3 text-center">
-            <p className="text-xs uppercase tracking-wider text-zinc-400">Contest Code</p>
-            <p className="mt-1 font-mono text-2xl font-bold tracking-widest text-orange-400">
-              {contestCode}
-            </p>
-          </div>
+          {/* Contest Code (only show if set) */}
+          {contestCode && (
+            <div className="rounded-lg bg-zinc-800 px-6 py-3 text-center">
+              <p className="text-xs uppercase tracking-wider text-zinc-400">Access PIN</p>
+              <p className="mt-1 font-mono text-2xl font-bold tracking-widest text-orange-400">
+                {contestCode}
+              </p>
+            </div>
+          )}
 
           {/* URL Display */}
           <div className="w-full rounded-lg border border-zinc-700 bg-zinc-800/50 px-4 py-3">
