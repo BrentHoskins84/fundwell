@@ -1,5 +1,4 @@
 import Link from 'next/link';
-import { notFound } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
 import { hasContestAccess } from '@/features/contests/actions/verify-pin';
@@ -65,6 +64,7 @@ export default async function ContestPage({ params }: ContestPageProps) {
     hero_image_url: contest.hero_image_url,
     org_image_url: contest.org_image_url,
     requiresPin: Boolean(contest.access_pin),
+    access_pin: contest.access_pin,
     row_numbers: contest.row_numbers,
     col_numbers: contest.col_numbers,
     // Payout percentages for winner display

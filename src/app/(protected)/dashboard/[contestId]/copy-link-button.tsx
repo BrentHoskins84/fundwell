@@ -3,12 +3,12 @@
 import { useState } from 'react';
 import { ShareIcon } from 'lucide-react';
 
+import { ShareQrModal } from '@/components/shared';
 import { Button } from '@/components/ui/button';
-import { ShareQrModal } from '@/features/contests/components/share-qr-modal';
 
 interface CopyLinkButtonProps {
   url: string;
-  code: string;
+  code: string | null;
   contestName: string;
 }
 
