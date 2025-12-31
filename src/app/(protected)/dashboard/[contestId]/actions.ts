@@ -36,6 +36,19 @@ export async function updateContestStatus(
 
   // Validate transition requirements
   if (targetStatus === 'open') {
+    // Check if unlocking from locked - scores must not exist
+    if (contest.status === 'locked') {
+      const { count: scoresCount } = await supabase
+        .from('scores')
+        .select('*', { count: 'exact', head: true })
+        .eq('contest_id', contestId);
+
+      if (scoresCount && scoresCount > 0) {
+        return { data: null, error: { message: 'Cannot unlock contest after scores have been entered' } };
+      }
+    }
+
+    // Opening from draft - payment options required
     const { count } = await supabase
       .from('payment_options')
       .select('*', { count: 'exact', head: true })
