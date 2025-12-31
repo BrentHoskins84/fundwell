@@ -3,8 +3,8 @@
 import { useState } from 'react';
 import { ShareIcon } from 'lucide-react';
 
-import { Button } from '@/components/ui/button';
 import { ShareQrModal } from '@/components/shared';
+import { Button } from '@/components/ui/button';
 
 interface CopyLinkButtonProps {
   url: string;
