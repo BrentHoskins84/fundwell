@@ -23,6 +23,21 @@ export async function uploadPaymentQr(
     return { data: null, error: { message: 'You must be logged in' } };
   }
 
+  // Verify user owns the contest
+  const { data: contest, error: contestError } = await supabase
+    .from('contests')
+    .select('id, owner_id')
+    .eq('id', contestId)
+    .single();
+
+  if (contestError || !contest) {
+    return { data: null, error: { message: 'Contest not found' } };
+  }
+
+  if (contest.owner_id !== user.id) {
+    return { data: null, error: { message: 'You do not own this contest' } };
+  }
+
   const file = formData.get('file') as File | null;
 
   if (!file) {

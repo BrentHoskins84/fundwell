@@ -182,7 +182,17 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
     if (!qrUrl) return;
 
     try {
-      await deletePaymentQr(qrUrl);
+      const result = await deletePaymentQr(qrUrl);
+
+      if (result?.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Delete failed',
+          description: result.error.message,
+        });
+        return;
+      }
+
       setOptions(
         options.map((opt) => (opt.id === optionId ? { ...opt, qr_code_url: '' } : opt))
       );
