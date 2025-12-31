@@ -198,7 +198,6 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           contestId={contest.id}
           status={contest.status}
           rowNumbers={contest.row_numbers}
-          colNumbers={contest.col_numbers}
         />
 
         {/* Grid Preview */}

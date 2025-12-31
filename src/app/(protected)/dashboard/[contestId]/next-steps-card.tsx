@@ -50,7 +50,6 @@ interface NextStepsCardProps {
   contestId: string;
   status: ContestStatus;
   rowNumbers: number[] | null;
-  colNumbers: number[] | null;
 }
 
 export async function NextStepsCard({
