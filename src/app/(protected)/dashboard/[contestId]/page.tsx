@@ -197,7 +197,8 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
         <NextStepsCard
           contestId={contest.id}
           status={contest.status}
-          rowNumbers={contest.row_numbers}
+          hasPaymentOptions={hasPaymentOptions}
+          hasNumbers={hasNumbers}
         />
 
         {/* Grid Preview */}

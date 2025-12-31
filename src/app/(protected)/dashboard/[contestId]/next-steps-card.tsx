@@ -8,69 +8,60 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
 
 type ContestStatus = Database['public']['Enums']['contest_status'];
 
+type NextStepInfo = {
+  message: string;
+  actionLink: string | null;
+} | null;
+
 function getNextStep(
   status: ContestStatus,
   hasPaymentOptions: boolean,
-  hasNumbers: boolean
-): string | null {
+  hasNumbers: boolean,
+  contestId: string
+): NextStepInfo {
   if (status === 'in_progress' || status === 'completed') return null;
 
   if (status === 'draft') {
     return !hasPaymentOptions
-      ? 'Add payment options so participants can pay for their squares'
-      : 'Open your contest to allow participants to claim squares';
+      ? { message: 'Add payment options so participants can pay for their squares', actionLink: `/dashboard/${contestId}/settings` }
+      : { message: 'Open your contest to allow participants to claim squares', actionLink: null };
   }
 
   if (status === 'open') {
     return !hasNumbers
-      ? 'Enter numbers or let them auto-generate when you lock the contest'
-      : 'Lock the contest to prevent new claims and prepare for game day';
+      ? { message: 'Enter numbers or let them auto-generate when you lock the contest', actionLink: null }
+      : { message: 'Lock the contest to prevent new claims and prepare for game day', actionLink: null };
   }
 
   if (status === 'locked') {
     return !hasNumbers
-      ? 'Enter numbers before starting the game'
-      : 'Start the game to begin tracking scores';
+      ? { message: 'Enter numbers before starting the game', actionLink: null }
+      : { message: 'Start the game to begin tracking scores', actionLink: null };
   }
 
-  return null;
-}
-
-function getActionLink(message: string, contestId: string): string | null {
-  if (message.includes('payment')) return `/dashboard/${contestId}/settings`;
   return null;
 }
 
 interface NextStepsCardProps {
   contestId: string;
   status: ContestStatus;
-  rowNumbers: number[] | null;
+  hasPaymentOptions: boolean;
+  hasNumbers: boolean;
 }
 
-export async function NextStepsCard({
+export function NextStepsCard({
   contestId,
   status,
-  rowNumbers,
+  hasPaymentOptions,
+  hasNumbers,
 }: NextStepsCardProps) {
-  const supabase = await createSupabaseServerClient();
-
-  const { count } = await supabase
-    .from('payment_options')
-    .select('*', { count: 'exact', head: true })
-    .eq('contest_id', contestId);
-
-  const hasPaymentOptions = (count ?? 0) > 0;
-  const hasNumbers = rowNumbers !== null;
-  const nextStep = getNextStep(status, hasPaymentOptions, hasNumbers);
+  const nextStep = getNextStep(status, hasPaymentOptions, hasNumbers, contestId);
 
   if (!nextStep) return null;
-
-  const actionLink = getActionLink(nextStep, contestId);
 
   return (
     <Card className="border-zinc-800 border-l-2 border-l-orange-400 bg-zinc-900">
@@ -80,11 +71,11 @@ export async function NextStepsCard({
             Next Step
             <ArrowRight className="h-4 w-4 text-orange-400" />
           </CardTitle>
-          <CardDescription>{nextStep}</CardDescription>
+          <CardDescription>{nextStep.message}</CardDescription>
         </div>
-        {actionLink && (
+        {nextStep.actionLink && (
           <Button variant="outline" size="sm" asChild>
-            <Link href={actionLink}>Go to Settings</Link>
+            <Link href={nextStep.actionLink}>Go to Settings</Link>
           </Button>
         )}
       </CardHeader>
