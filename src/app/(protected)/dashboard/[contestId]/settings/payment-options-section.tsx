@@ -113,7 +113,7 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
     setOptions(
       options.map((opt) =>
         opt.id === id
-          ? { ...opt, type: newType, handle_or_link: '', account_last_4_digits: '' }
+          ? { ...opt, type: newType, handle_or_link: '', account_last_4_digits: '', qr_code_url: '' }
           : opt
       )
     );
@@ -122,6 +122,15 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
 
   const handleQrUpload = async (optionId: string, file: File) => {
     if (isSavingQr) return;
+
+    if (optionId.startsWith('new-')) {
+      toast({
+        variant: 'destructive',
+        title: 'Save required',
+        description: 'Please save the payment option before uploading a QR code.',
+      });
+      return;
+    }
 
     const allowedTypes = ['image/jpeg', 'image/png', 'image/webp'];
     if (!allowedTypes.includes(file.type)) {
@@ -183,8 +192,12 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
         if (saveResult?.error) {
           // Rollback UI change
           setOptions(options);
-          // Delete the uploaded file since save failed
-          await deletePaymentQr(result.data!.url);
+          // Attempt to delete the uploaded file since save failed
+          try {
+            await deletePaymentQr(result.data!.url);
+          } catch (cleanupError) {
+            console.error('Failed to cleanup orphaned QR code:', cleanupError);
+          }
           toast({
             variant: 'destructive',
             title: 'Save failed',
@@ -214,23 +227,11 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
     if (!qrUrl || isSavingQr) return;
 
     try {
-      const result = await deletePaymentQr(qrUrl);
-
-      if (result?.error) {
-        toast({
-          variant: 'destructive',
-          title: 'Delete failed',
-          description: result.error.message,
-        });
-        return;
-      }
-
+      // First, update the database to clear qr_code_url
       const updatedOptions = options.map((opt) =>
         opt.id === optionId ? { ...opt, qr_code_url: '' } : opt
       );
-      setOptions(updatedOptions);
 
-      // Immediately persist to database
       setIsSavingQr(true);
       const saveResult = await updatePaymentOptions(
         contest.id,
@@ -247,17 +248,29 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
       setIsSavingQr(false);
 
       if (saveResult?.error) {
-        // Rollback UI change (restore the qr_code_url)
-        setOptions(options);
+        // DB save failed - don't delete file, don't update UI
         toast({
           variant: 'destructive',
-          title: 'Save failed',
+          title: 'Delete failed',
           description: saveResult.error.message,
         });
         return;
       }
 
+      // DB update succeeded - update UI
+      setOptions(updatedOptions);
       setHasChanges(false);
+
+      // Now attempt to delete file from storage
+      try {
+        const deleteResult = await deletePaymentQr(qrUrl);
+        if (deleteResult?.error) {
+          console.error('Failed to delete QR file from storage:', deleteResult.error.message);
+        }
+      } catch (storageError) {
+        console.error('Failed to delete QR file from storage:', storageError);
+      }
+
       toast({
         title: 'QR code removed',
         description: 'Payment options saved.',
@@ -520,13 +533,14 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
                       e.target.value = '';
                     }}
                     className="hidden"
+                    disabled={option.id.startsWith('new-')}
                   />
                   <Button
                     type="button"
                     variant="outline"
                     size="sm"
                     onClick={() => fileInputRefs.current[option.id]?.click()}
-                    disabled={uploadingQrId === option.id}
+                    disabled={uploadingQrId === option.id || option.id.startsWith('new-')}
                     className="border-zinc-700"
                   >
                     {uploadingQrId === option.id ? (
@@ -540,7 +554,11 @@ export function PaymentOptionsSection({ contest, paymentOptions }: PaymentOption
                       'Upload QR Code'
                     )}
                   </Button>
-                  <p className="text-xs text-zinc-500">PNG, JPG, or WebP. Max 2MB.</p>
+                  {option.id.startsWith('new-') ? (
+                    <p className="text-xs text-amber-500">Save the payment option first</p>
+                  ) : (
+                    <p className="text-xs text-zinc-500">PNG, JPG, or WebP. Max 2MB.</p>
+                  )}
                 </div>
               </div>
             </div>
