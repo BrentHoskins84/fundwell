@@ -12,7 +12,6 @@ import { ContestStatusSection } from './contest-status-section';
 import { DangerZoneSection } from './danger-zone-section';
 import { PaymentOptionsSection } from './payment-options-section';
 import { PricingPayoutsSection } from './pricing-payouts-section';
-import { UnlockContestButton } from './unlock-contest-button';
 
 interface SettingsPageProps {
   params: Promise<{ contestId: string }>;
@@ -68,7 +67,6 @@ export default async function SettingsPage({ params }: SettingsPageProps) {
       <div className="space-y-6">
         <BasicInfoSection contest={contest} />
         <ContestStatusSection contest={contest} />
-        {contest.status === 'locked' && <UnlockContestButton contestId={contest.id} />}
         <PricingPayoutsSection contest={contest} />
         <PaymentOptionsSection contest={contest} paymentOptions={paymentOptions} />
         <AccessControlSection contest={contest} />
