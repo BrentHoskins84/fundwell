@@ -1,4 +1,5 @@
 import { resendClient } from '@/libs/resend/resend-client';
+import { logger } from '@/utils/logger';
 
 interface SendEmailParams {
   to: string;
@@ -34,7 +35,7 @@ export async function sendEmail({
 
     return { success: true, id: data?.id };
   } catch (error) {
-    console.error('Failed to send email:', error);
+    logger.error('send-email', error);
     return { success: false, error };
   }
 }

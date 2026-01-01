@@ -1,0 +1,96 @@
+/**
+ * In-memory rate limiter using a Map.
+ * Suitable for serverless environments with short-lived instances.
+ *
+ * @example
+ * ```ts
+ * const result = await checkRateLimit('user-123', { maxRequests: 10, windowMs: 60000 });
+ * if (!result.success) {
+ *   return new Response('Rate limit exceeded', { status: 429 });
+ * }
+ * ```
+ */
+
+interface RateLimitEntry {
+  count: number;
+  windowStart: number;
+}
+
+interface RateLimitOptions {
+  maxRequests?: number;
+  windowMs?: number;
+}
+
+interface RateLimitResult {
+  success: boolean;
+  remaining: number;
+  resetAt: number;
+}
+
+const rateLimitStore = new Map<string, RateLimitEntry>();
+
+const DEFAULT_MAX_REQUESTS = 10;
+const DEFAULT_WINDOW_MS = 60000; // 60 seconds
+
+/**
+ * Checks if a request should be rate limited.
+ *
+ * @param key - Unique identifier for the rate limit (e.g., user ID, IP address)
+ * @param options - Rate limit configuration
+ * @param options.maxRequests - Maximum number of requests allowed (default: 10)
+ * @param options.windowMs - Time window in milliseconds (default: 60000)
+ * @returns Rate limit check result with success status, remaining requests, and reset time
+ */
+export async function checkRateLimit(
+  key: string,
+  options?: RateLimitOptions
+): Promise<RateLimitResult> {
+  const maxRequests = options?.maxRequests ?? DEFAULT_MAX_REQUESTS;
+  const windowMs = options?.windowMs ?? DEFAULT_WINDOW_MS;
+  const now = Date.now();
+
+  const entry = rateLimitStore.get(key);
+
+  // If no entry or window expired, create/reset entry
+  if (!entry || now - entry.windowStart >= windowMs) {
+    const newEntry: RateLimitEntry = {
+      count: 1,
+      windowStart: now,
+    };
+    rateLimitStore.set(key, newEntry);
+    return {
+      success: true,
+      remaining: maxRequests - 1,
+      resetAt: now + windowMs,
+    };
+  }
+
+  // Increment count
+  entry.count += 1;
+  const remaining = Math.max(0, maxRequests - entry.count);
+  const success = entry.count <= maxRequests;
+
+  // Clean up expired entries periodically (every 100 checks)
+  if (rateLimitStore.size > 0 && Math.random() < 0.01) {
+    cleanupExpiredEntries(windowMs);
+  }
+
+  return {
+    success,
+    remaining,
+    resetAt: entry.windowStart + windowMs,
+  };
+}
+
+/**
+ * Removes expired entries from the rate limit store to prevent memory leaks.
+ */
+function cleanupExpiredEntries(windowMs: number): void {
+  const now = Date.now();
+  for (const [key, entry] of rateLimitStore.entries()) {
+    if (now - entry.windowStart >= windowMs) {
+      rateLimitStore.delete(key);
+    }
+  }
+}
+

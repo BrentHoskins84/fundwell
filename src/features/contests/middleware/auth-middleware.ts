@@ -1,6 +1,7 @@
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
+import { logger } from '@/utils/logger';
 import { SupabaseClient } from '@supabase/supabase-js';
 import { User } from '@supabase/supabase-js';
 
@@ -80,7 +81,7 @@ export function withContestOwnership<T>(
       ) {
         return { data: null, error: { message: error.message } };
       }
-      console.error(error);
+      logger.error('auth-middleware', error);
       return { data: null, error: { message: 'An unexpected error occurred' } };
     }
   };

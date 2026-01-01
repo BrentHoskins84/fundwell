@@ -10,6 +10,7 @@ import { getCurrentISOString } from '@/utils/date-formatters';
 import { sanitizeEmail } from '@/utils/email-validator';
 import { getURL } from '@/utils/get-url';
 import { logger } from '@/utils/logger';
+import { checkRateLimit } from '@/utils/rate-limit';
 
 interface ClaimSquareInput {
   squareId: string;
@@ -35,6 +36,15 @@ export async function claimSquare(
     return {
       data: null,
       error: { message: 'Invalid email address format' },
+    };
+  }
+
+  // Rate limit check
+  const rateLimit = await checkRateLimit(`claim:${sanitizedEmail}`, { maxRequests: 10, windowMs: 60000 });
+  if (!rateLimit.success) {
+    return {
+      data: null,
+      error: { message: 'Too many requests. Please wait a moment and try again.' },
     };
   }
   
