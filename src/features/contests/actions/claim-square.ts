@@ -1,7 +1,7 @@
 'use server';
 
 import { getPaymentOptionsForContest } from '@/features/contests/queries/get-payment-options';
-import { sendEmail } from '@/features/emails/send-email';
+import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { squareClaimedEmail } from '@/features/emails/templates/square-claimed-email';
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { getURL } from '@/utils/get-url';
@@ -168,11 +168,12 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
   }
 
   // Send confirmation email (don't block on failure)
-  try {
-    const paymentOptions = await getPaymentOptionsForContest(contestId);
-    const contestUrl = `${getURL()}/contest/${contest.slug}`;
+  const paymentOptions = await getPaymentOptionsForContest(contestId);
+  const contestUrl = `${getURL()}/contest/${contest.slug}`;
 
-    const { subject, html } = squareClaimedEmail({
+  sendEmailSafe({
+    to: email,
+    template: squareClaimedEmail({
       participantName: firstName,
       contestName: contest.name,
       rowTeamName: contest.row_team_name,
@@ -186,20 +187,11 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
         handle: opt.handle_or_link,
         link: opt.handle_or_link.startsWith('http') ? opt.handle_or_link : undefined,
       })),
-    });
-
-    await sendEmail({
-      to: email,
-      subject,
-      html,
-      contestId,
-      squareId: updatedSquare.id,
-      emailType: 'square_claimed',
-    });
-  } catch (emailError) {
-    // Log error but don't fail the claim
-    console.error('Failed to send square claimed email:', emailError);
-  }
+    }),
+    contestId,
+    squareId: updatedSquare.id,
+    emailType: 'square_claimed',
+  });
 
   return {
     data: {

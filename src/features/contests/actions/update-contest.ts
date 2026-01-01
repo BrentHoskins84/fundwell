@@ -1,9 +1,10 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
 import { SupabaseClient } from '@supabase/supabase-js';
+
+import { withContestOwnership } from '../middleware/auth-middleware';
 
 type ContestUpdate = Database['public']['Tables']['contests']['Update'];
 type SupabaseDb = SupabaseClient<Database>;
@@ -70,41 +71,31 @@ export async function updateContest(
   contestId: string,
   updates: ContestUpdate
 ): Promise<ActionResponse<{ id: string }>> {
-  const supabase = await createSupabaseServerClient();
+  return withContestOwnership<{ id: string }>(contestId, async (user, supabase) => {
+    // Validate status transitions
+    if (updates.status === 'in_progress') {
+      const validationError = await validateInProgressTransition(supabase, contestId, user.id);
+      if (validationError) throw new Error(validationError);
+    }
 
-  // Verify user is authenticated
-  const {
-    data: { user },
-    error: authError,
-  } = await supabase.auth.getUser();
+    if (updates.status === 'open') {
+      const validationError = await validateOpenTransition(supabase, contestId, user.id);
+      if (validationError) throw new Error(validationError);
+    }
 
-  if (authError || !user) {
-    return { data: null, error: { message: 'You must be logged in' } };
-  }
+    // Update contest (RLS ensures only owner can update)
+    const { data, error } = await supabase
+      .from('contests')
+      .update(updates)
+      .eq('id', contestId)
+      .eq('owner_id', user.id)
+      .select('id')
+      .single();
 
-  // Validate status transitions
-  if (updates.status === 'in_progress') {
-    const error = await validateInProgressTransition(supabase, contestId, user.id);
-    if (error) return { data: null, error: { message: error } };
-  }
+    if (error) {
+      throw new Error('Failed to update contest');
+    }
 
-  if (updates.status === 'open') {
-    const error = await validateOpenTransition(supabase, contestId, user.id);
-    if (error) return { data: null, error: { message: error } };
-  }
-
-  // Update contest (RLS ensures only owner can update)
-  const { data, error } = await supabase
-    .from('contests')
-    .update(updates)
-    .eq('id', contestId)
-    .eq('owner_id', user.id)
-    .select('id')
-    .single();
-
-  if (error) {
-    return { data: null, error: { message: `Failed to update contest: ${error.message}` } };
-  }
-
-  return { data: { id: data.id }, error: null };
+    return { id: data.id };
+  })();
 }
