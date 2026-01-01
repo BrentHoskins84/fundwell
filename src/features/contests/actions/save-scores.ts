@@ -3,14 +3,12 @@
 import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { winnerEmail } from '@/features/emails/templates/winner-email';
-import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
 import { getCurrentISOString } from '@/utils/date-formatters';
 import { getURL } from '@/utils/get-url';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
-
-type GameQuarter = Database['public']['Enums']['game_quarter'];
+import { GameQuarter } from '../types';
 
 interface ScoreInput {
   quarter: GameQuarter;

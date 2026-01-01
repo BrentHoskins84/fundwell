@@ -1,3 +1,5 @@
+import { logger } from '@/utils/logger';
+
 import { sendEmail } from './send-email';
 
 interface SendEmailSafeParams {
@@ -20,7 +22,8 @@ export async function sendEmailSafe(params: SendEmailSafeParams): Promise<boolea
     });
     return true;
   } catch (error) {
-    console.error(`Failed to send ${params.emailType} email to ${params.to}:`, error);
+    const { emailType } = params;
+    logger.error('sendEmailSafe', error, { emailType, to: params.to, contestId: params.contestId });
     return false;
   }
 }

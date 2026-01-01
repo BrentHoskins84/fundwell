@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
-import { Check, Copy, DollarSign, Loader2 } from 'lucide-react';
+import { Check, Copy, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -16,15 +16,13 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Database } from '@/libs/supabase/types';
 import { generatePaymentUrl } from '@/utils/payment-url-generator';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { claimSquare } from '../actions/claim-square';
+import { PaymentOption, PaymentOptionType } from '../types';
+import { getPaymentConfig } from '../utils/payment-helpers';
 import { ClaimSquareFormData,claimSquareSchema } from '../validation';
-
-type PaymentOption = Database['public']['Tables']['payment_options']['Row'];
-type PaymentOptionType = Database['public']['Enums']['payment_option_type'];
 
 interface ClaimSquareModalProps {
   isOpen: boolean;
@@ -39,53 +37,6 @@ interface ClaimSquareModalProps {
   maxSquaresPerPerson?: number | null;
   paymentOptions: PaymentOption[];
   onSuccess?: () => void;
-}
-
-// Payment option icons
-function getPaymentIcon(type: PaymentOptionType) {
-  switch (type) {
-    case 'venmo':
-      return (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M19.5 3c.9 1.5 1.3 3 1.3 5 0 5.5-4.7 12.7-8.5 17H5.4L3 3.6l6-.6 1.3 10.8c1.2-2 2.7-5.2 2.7-7.4 0-1.9-.3-3.2-.9-4.2L19.5 3z" />
-        </svg>
-      );
-    case 'paypal':
-      return (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M7.076 21.337H2.47a.641.641 0 0 1-.633-.74L4.944 2.85a.773.773 0 0 1 .763-.65h6.936c2.287 0 4.068.607 5.134 1.75.962 1.032 1.393 2.484 1.282 4.317l-.015.218c-.547 3.523-2.986 5.515-6.631 5.515H9.872a.773.773 0 0 0-.763.65L7.076 21.337zm12.147-13.69l.014-.158c.068-.736-.018-1.27-.299-1.727-.478-.779-1.442-1.162-2.942-1.162h-1.553c-.233 0-.44.155-.494.382l-.806 4.25c-.046.243.14.465.395.465h.843c1.614 0 2.877-.59 3.444-1.613.291-.525.44-1.193.398-1.868v-.57z" />
-        </svg>
-      );
-    case 'cashapp':
-      return (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M23.59 3.475a5.1 5.1 0 0 0-3.05-3.05c-1.31-.42-2.5-.42-4.92-.42H8.36c-2.4 0-3.61 0-4.9.4a5.1 5.1 0 0 0-3.05 3.06C0 4.765 0 5.965 0 8.365v7.27c0 2.41 0 3.6.4 4.9a5.1 5.1 0 0 0 3.05 3.05c1.3.41 2.5.41 4.9.41h7.28c2.41 0 3.61 0 4.9-.4a5.1 5.1 0 0 0 3.06-3.06c.41-1.3.41-2.5.41-4.9v-7.25c0-2.41 0-3.61-.41-4.91zm-6.17 4.63l-.93.93a.5.5 0 0 1-.67.01 5 5 0 0 0-3.22-1.18c-.97 0-1.94.32-1.94 1.21 0 .9 1.04 1.2 2.24 1.65 2.1.7 3.84 1.58 3.84 3.64 0 2.24-1.74 3.78-4.58 4.06v1.86a.5.5 0 0 1-.5.5h-1.4a.5.5 0 0 1-.5-.5v-1.9a6.35 6.35 0 0 1-4.07-1.77.5.5 0 0 1 0-.69l.97-.97a.5.5 0 0 1 .67-.01 5.02 5.02 0 0 0 3.37 1.28c1.59 0 2.45-.64 2.45-1.42 0-.9-1.04-1.27-2.43-1.8-2.17-.76-3.67-1.7-3.67-3.48 0-2.14 1.87-3.62 4.2-3.9V5.28a.5.5 0 0 1 .5-.5h1.4a.5.5 0 0 1 .5.5v1.85c1.32.18 2.5.63 3.38 1.34a.5.5 0 0 1 .04.7z" />
-        </svg>
-      );
-    case 'zelle':
-      return (
-        <svg className="h-5 w-5" viewBox="0 0 24 24" fill="currentColor">
-          <path d="M13.559 24h-2.406a.67.67 0 0 1-.665-.592l-.339-3.252h-5.11l-.339 3.252a.67.67 0 0 1-.665.592H1.63a.666.666 0 0 1-.664-.74l2.34-15.836a.667.667 0 0 1 .665-.592h4.882a.667.667 0 0 1 .665.592l2.34 15.836a.666.666 0 0 1-.664.74h-.635zm-1.707-5.834l-1.515-9.988H9.92l-1.515 9.988h3.447zm8.63 5.834h-2.406a.67.67 0 0 1-.665-.592l-.339-3.252h-1.71a.667.667 0 0 1-.665-.74l1.755-11.88a.667.667 0 0 1 .665-.593h4.882a.667.667 0 0 1 .665.593l1.755 11.88a.666.666 0 0 1-.665.74h-1.71l-.339 3.252a.67.67 0 0 1-.665.592h-.558zm-.149-5.834l-.916-7.988h-.417l-.916 7.988h2.249z" />
-        </svg>
-      );
-    default:
-      return <DollarSign className="h-5 w-5" />;
-  }
-}
-
-function getPaymentColor(type: PaymentOptionType) {
-  switch (type) {
-    case 'venmo':
-      return 'text-blue-400';
-    case 'paypal':
-      return 'text-blue-500';
-    case 'cashapp':
-      return 'text-green-400';
-    case 'zelle':
-      return 'text-purple-400';
-    default:
-      return 'text-zinc-400';
-  }
 }
 
 function PaymentOptionItem({ option }: { option: PaymentOption }) {
@@ -103,11 +54,13 @@ function PaymentOptionItem({ option }: { option: PaymentOption }) {
 
   const paymentUrl = generatePaymentUrl(option.type, option.handle_or_link);
 
+  const { color, Icon } = getPaymentConfig(option.type);
+
   return (
     <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4 space-y-3">
       <div className="flex items-start gap-3">
-        <div className={`mt-0.5 ${getPaymentColor(option.type)}`}>
-          {getPaymentIcon(option.type)}
+        <div className={`mt-0.5 ${color}`}>
+          <Icon className="h-5 w-5" />
         </div>
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-2">
@@ -241,7 +194,7 @@ export function ClaimSquareModal({
           venmoHandle: data.venmoHandle,
         });
 
-        if (result.error) {
+        if (result?.error) {
           setServerError(result.error.message);
           return;
         }

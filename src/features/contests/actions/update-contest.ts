@@ -5,8 +5,8 @@ import { ActionResponse } from '@/types/action-response';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
+import { ContestUpdate } from '../types';
 
-type ContestUpdate = Database['public']['Tables']['contests']['Update'];
 type SupabaseDb = SupabaseClient<Database>;
 
 async function validateInProgressTransition(

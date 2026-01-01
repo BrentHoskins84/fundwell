@@ -14,12 +14,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
-import { Database } from '@/libs/supabase/types';
 import { formatDateTime } from '@/utils/date-formatters';
 
 import { updateSquareStatus } from '../actions/update-square-status';
-
-type PaymentStatus = Database['public']['Enums']['payment_status'];
+import { PaymentStatus } from '../types';
 
 export interface ManageSquare {
   id: string;

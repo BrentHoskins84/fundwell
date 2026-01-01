@@ -8,6 +8,7 @@ import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-clie
 import { ActionResponse } from '@/types/action-response';
 import { getCurrentISOString } from '@/utils/date-formatters';
 import { getURL } from '@/utils/get-url';
+import { logger } from '@/utils/logger';
 
 interface ClaimSquareInput {
   squareId: string;
@@ -45,8 +46,7 @@ export async function claimSquare(
     .single();
 
   if (contestError || !contest) {
-    // TODO: Replace with proper error handling
-    console.error('Error fetching contest:', contestError);
+    logger.error('claimSquare', contestError, { contestId, squareId });
     return {
       data: null,
       error: { message: ContestErrors.NOT_FOUND },
@@ -70,8 +70,7 @@ export async function claimSquare(
     .single();
 
   if (squareError || !square) {
-    // TODO: Replace with proper error handling
-    console.error('Error fetching square:', squareError);
+    logger.error('claimSquare', squareError, { contestId, squareId });
     return {
       data: null,
       error: { message: ContestErrors.SQUARE_NOT_FOUND },
@@ -98,8 +97,7 @@ export async function claimSquare(
       .neq('payment_status', 'available');
 
     if (countError) {
-      // TODO: Replace with proper error handling
-      console.error('Error counting squares:', countError);
+      logger.error('claimSquare', countError, { contestId, email });
       return {
         data: null,
         error: { message: ContestErrors.FAILED_TO_CLAIM },
@@ -133,8 +131,7 @@ export async function claimSquare(
     .single();
 
   if (updateError) {
-    // TODO: Replace with proper error handling
-    console.error('Error claiming square:', updateError);
+    logger.error('claimSquare', updateError, { contestId, squareId });
 
     // Check if it was a race condition (no rows updated)
     if (updateError.code === 'PGRST116') {

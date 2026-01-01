@@ -1,13 +1,11 @@
 'use server';
 
 import { ContestErrors } from '@/features/contests/constants/error-messages';
-import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
 import { getCurrentISOString } from '@/utils/date-formatters';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
-
-type PaymentStatus = Database['public']['Enums']['payment_status'];
+import { PaymentStatus } from '../types';
 
 interface BulkUpdateSquaresInput {
   contestId: string;

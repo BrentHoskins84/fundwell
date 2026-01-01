@@ -10,8 +10,7 @@ import { getCurrentISOString } from '@/utils/date-formatters';
 import { getURL } from '@/utils/get-url';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
-
-type PaymentStatus = Database['public']['Enums']['payment_status'];
+import { PaymentStatus } from '../types';
 
 interface UpdateSquareStatusInput {
   squareId: string;

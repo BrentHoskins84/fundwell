@@ -18,13 +18,22 @@ export const logger = {
   debug: (message: string, ...args: unknown[]) => {
     if (shouldLog('debug')) console.debug(`[DEBUG] ${message}`, ...args);
   },
-  info: (message: string, ...args: unknown[]) => {
-    if (shouldLog('info')) console.info(`[INFO] ${message}`, ...args);
+  info: (context: string, message: string, metadata?: Record<string, unknown>): void => {
+    if (shouldLog('info')) {
+      console.info(`[INFO] ${context}:`, message);
+      if (metadata) console.info(metadata);
+    }
   },
-  warn: (message: string, ...args: unknown[]) => {
-    if (shouldLog('warn')) console.warn(`[WARN] ${message}`, ...args);
+  warn: (context: string, message: string, metadata?: Record<string, unknown>): void => {
+    if (shouldLog('warn')) {
+      console.warn(`[WARN] ${context}:`, message);
+      if (metadata) console.warn(metadata);
+    }
   },
-  error: (message: string, ...args: unknown[]) => {
-    if (shouldLog('error')) console.error(`[ERROR] ${message}`, ...args);
+  error: (context: string, error: unknown, metadata?: Record<string, unknown>): void => {
+    if (shouldLog('error')) {
+      console.error(`[ERROR] ${context}:`, error);
+      if (metadata) console.error(metadata);
+    }
   },
 };
