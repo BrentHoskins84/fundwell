@@ -12,11 +12,12 @@ import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-clie
 import { Database } from '@/libs/supabase/types';
 import { getURL } from '@/utils/get-url';
 
+import { ContestStatusButton } from './contest-status-button';
 import { CopyLinkButton } from './copy-link-button';
 import { DashboardGridClient } from './dashboard-grid-client';
 import { EnterScoresButton } from './enter-scores-button';
 import { ManageNumbersButton } from './manage-numbers-button';
-import { OpenContestButton } from './open-contest-button';
+import { NextStepsCard } from './next-steps-card';
 import { WinnersSection } from './winners-section';
 
 type ContestStatus = Database['public']['Enums']['contest_status'];
@@ -53,11 +54,15 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
     notFound();
   }
 
-  // Fetch squares and scores for the grid
-  const [squares, scores] = await Promise.all([
+  // Fetch squares, scores, and payment options count
+  const [squares, scores, paymentOptionsResult] = await Promise.all([
     getSquaresForContest(contestId),
     getScoresForContest(contestId),
+    supabase.from('payment_options').select('*', { count: 'exact', head: true }).eq('contest_id', contestId),
   ]);
+
+  const hasPaymentOptions = (paymentOptionsResult.count ?? 0) > 0;
+  const hasNumbers = contest.row_numbers !== null;
 
   // Extract winning square IDs from scores
   const winningSquareIds = scores
@@ -89,7 +94,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
   const fundraiserCurrent = revenue * (fundraiserPercent / 100);
   const fundraiserMax = totalPot * (fundraiserPercent / 100);
 
-  const publicUrl = getURL(`/c/${contest.slug}`);
+  const publicUrl = getURL(`/contest/${contest.slug}`);
 
   return (
     <div className="space-y-6">
@@ -120,7 +125,7 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           </div>
 
           <div className="flex shrink-0 gap-2">
-            <CopyLinkButton url={publicUrl} code={contest.code} contestName={contest.name} />
+            <CopyLinkButton url={publicUrl} code={contest.access_pin} contestName={contest.name} />
             <Button variant="default" size="sm" asChild>
               <Link href={`/dashboard/${contestId}/settings`}>
                 <Settings className="mr-2 h-4 w-4" />
@@ -188,6 +193,14 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           </Card>
         </div>
 
+        {/* Next Steps */}
+        <NextStepsCard
+          contestId={contest.id}
+          status={contest.status}
+          hasPaymentOptions={hasPaymentOptions}
+          hasNumbers={hasNumbers}
+        />
+
         {/* Grid Preview */}
         <Card className="border-zinc-800 bg-zinc-900">
           <CardHeader className="flex flex-row items-center justify-between space-y-0">
@@ -233,10 +246,16 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
           </CardHeader>
           <CardContent>
             <div className="flex flex-col gap-3">
-              {contest.status === 'draft' && <OpenContestButton contestId={contestId} className="w-full justify-start" />}
+              <ContestStatusButton
+                contestId={contestId}
+                currentStatus={contest.status}
+                hasPaymentOptions={hasPaymentOptions}
+                hasNumbers={hasNumbers}
+                className="w-full justify-start"
+              />
 
               <Button variant="default" className="w-full justify-start" asChild>
-                <Link href={`/c/${contest.slug}`} target="_blank">
+                <Link href={`/contest/${contest.slug}`} target="_blank">
                   <Eye className="mr-2 h-4 w-4" />
                   View Public Page
                 </Link>

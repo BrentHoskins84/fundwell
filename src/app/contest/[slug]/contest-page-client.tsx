@@ -2,10 +2,10 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { Trophy } from 'lucide-react';
+import { Share2, Trophy } from 'lucide-react';
 
 import { MarketingFooter } from '@/components/layout/marketing-footer';
-import { AdPlaceholder } from '@/components/shared/ad-placeholder';
+import { AdPlaceholder, ShareQrModal } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { ClaimSquareModal, PinEntryModal, Square, SquaresGrid } from '@/features/contests/components';
@@ -33,6 +33,7 @@ interface Contest {
   hero_image_url: string | null;
   org_image_url: string | null;
   requiresPin: boolean;
+  access_pin: string | null;
   row_numbers: number[] | null;
   col_numbers: number[] | null;
   // Payout percentages
@@ -72,6 +73,12 @@ export function ContestPageClient({ contest, squares, scores, hasAccess, showAds
   const [showPinModal, setShowPinModal] = useState(!hasAccess && contest.requiresPin);
   const [selectedSquare, setSelectedSquare] = useState<Square | null>(null);
   const [isClaimModalOpen, setIsClaimModalOpen] = useState(false);
+  const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+
+  // Build contest URL for sharing
+  const contestUrl = typeof window !== 'undefined' 
+    ? `${window.location.origin}/contest/${contest.slug}` 
+    : `/contest/${contest.slug}`;
   const realtimeSquares = useRealtimeSquares(contest.id, squares);
 
   // Get winning square IDs for highlighting
@@ -85,7 +92,27 @@ export function ContestPageClient({ contest, squares, scores, hasAccess, showAds
 
   // Check if we have winners to show
   const hasWinners = scores.length > 0 && scores.some((s) => s.winning_square_id);
-  const showSidebar = showAds || hasWinners;
+
+  // Build payout list based on sport type
+  const payoutList = contest.sport_type === 'baseball'
+    ? [
+        { label: 'Game 1', percent: contest.payout_game1_percent },
+        { label: 'Game 2', percent: contest.payout_game2_percent },
+        { label: 'Game 3', percent: contest.payout_game3_percent },
+        { label: 'Game 4', percent: contest.payout_game4_percent },
+        { label: 'Game 5', percent: contest.payout_game5_percent },
+        { label: 'Game 6', percent: contest.payout_game6_percent },
+        { label: 'Game 7', percent: contest.payout_game7_percent },
+      ].filter((p) => p.percent && p.percent > 0)
+    : [
+        { label: 'Q1', percent: contest.payout_q1_percent },
+        { label: 'Halftime', percent: contest.payout_q2_percent },
+        { label: 'Q3', percent: contest.payout_q3_percent },
+        { label: 'Final', percent: contest.payout_final_percent },
+      ].filter((p) => p.percent && p.percent > 0);
+
+  const showPayouts = !hasWinners && payoutList.length > 0;
+  const showSidebar = showAds || hasWinners || showPayouts;
 
   // Get payout percentage for a quarter
   const getPayoutPercent = (quarter: GameQuarter): number => {
@@ -337,9 +364,66 @@ export function ContestPageClient({ contest, squares, scores, hasAccess, showAds
             </div>
           </div>
 
-          {/* Right Sidebar: Winners + Ad */}
+          {/* Right Sidebar: Payouts/Winners + Ad */}
           {showSidebar && (
           <div className="space-y-4">
+            {/* Payouts Section (only when no winners yet) */}
+            {showPayouts && (
+              <div className="rounded-lg border border-zinc-700 bg-zinc-800/50 p-4">
+                <h2 className="text-lg font-bold text-white mb-1">Payouts</h2>
+                <p className="text-xs text-zinc-400 mb-3">
+                  Help sell all squares —{' '}
+                  <button
+                    onClick={() => setIsShareModalOpen(true)}
+                    className="text-orange-400 hover:text-orange-300 inline-flex items-center gap-1"
+                  >
+                    <Share2 className="h-3 w-3" />
+                    share now
+                  </button>
+                </p>
+                <div className="space-y-2">
+                  {payoutList.map((payout) => {
+                    const expectedPot = 100 * contest.square_price;
+                    const expectedPayout = (expectedPot * payout.percent!) / 100;
+                    const currentPayout = (totalPot * payout.percent!) / 100;
+                    return (
+                      <div
+                        key={payout.label}
+                        className="flex items-center justify-between rounded bg-zinc-800 px-3 py-2"
+                      >
+                        <span className="text-sm text-zinc-300">{payout.label}</span>
+                        <div className="text-right">
+                          <span className="text-sm font-semibold text-white">
+                            ${expectedPayout.toFixed(0)}
+                          </span>
+                          <span className="text-xs text-zinc-500 ml-1">
+                            (${currentPayout.toFixed(0)} now)
+                          </span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+                <div className="mt-3 pt-3 border-t border-zinc-700 flex justify-between">
+                  <span className="text-sm text-zinc-400">Total Payouts</span>
+                  <div className="text-right">
+                    {(() => {
+                      const expectedPot = 100 * contest.square_price;
+                      const totalPercent = payoutList.reduce((sum, p) => sum + (p.percent || 0), 0);
+                      const expectedTotal = (expectedPot * totalPercent) / 100;
+                      const currentTotal = (totalPot * totalPercent) / 100;
+                      return (
+                        <>
+                          <span className="text-sm font-bold text-white">${expectedTotal.toFixed(0)}</span>
+                          <span className="text-xs text-zinc-500 ml-1">(${currentTotal.toFixed(0)} now)</span>
+                        </>
+                      );
+                    })()}
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Winners Section */}
             {hasWinners && (
               <div className="rounded-lg border border-amber-500/30 bg-amber-500/5 p-4">
@@ -421,6 +505,15 @@ export function ContestPageClient({ contest, squares, scores, hasAccess, showAds
           onSuccess={handleClaimSuccess}
         />
       )}
+
+      {/* Share Modal */}
+      <ShareQrModal
+        isOpen={isShareModalOpen}
+        onClose={() => setIsShareModalOpen(false)}
+        contestUrl={contestUrl}
+        contestCode={contest.access_pin}
+        contestName={contest.name}
+      />
     </div>
   );
 }

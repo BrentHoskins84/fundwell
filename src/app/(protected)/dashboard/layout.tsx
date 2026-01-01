@@ -1,6 +1,6 @@
 import { redirect } from 'next/navigation';
 
-import { getUser } from '@/features/account/controllers/get-session';
+import { getUser } from '@/features/account/controllers/get-user';
 
 import { DashboardShell } from './dashboard-shell';
 

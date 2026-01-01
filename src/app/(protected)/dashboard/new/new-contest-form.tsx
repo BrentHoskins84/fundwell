@@ -50,7 +50,7 @@ const STEP_FIELDS: Record<number, string[]> = {
   3: ['primaryColor', 'secondaryColor'],
 };
 
-export default function NewContestPage() {
+export function NewContestForm() {
   const [currentStep, setCurrentStep] = useState(1);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const { toast } = useToast();
