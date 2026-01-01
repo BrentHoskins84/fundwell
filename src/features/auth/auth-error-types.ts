@@ -24,27 +24,35 @@ export function getUserFriendlyErrorMessage(error: unknown): {
 
   let type: AuthErrorType = 'generic_error';
 
-  if (
-    errorMessage.includes('user already registered') ||
-    errorCode === 'user_already_exists'
-  ) {
+  // Check errorCode first for precise matching
+  if (errorCode === 'user_already_exists') {
     type = 'email_already_exists';
-  } else if (
-    errorMessage.includes('invalid login credentials') ||
-    errorCode === 'invalid_credentials'
-  ) {
+  } else if (errorCode === 'invalid_credentials') {
     type = 'invalid_credentials';
-  } else if (errorMessage.includes('rate')) {
+  } else if (errorCode === 'over_request_rate_limit' || errorCode === 'rate_limit_exceeded') {
+    type = 'rate_limit_exceeded';
+  } else if (errorCode === 'otp_expired' || errorCode === 'invalid_otp') {
+    type = 'invalid_magic_link';
+  } else if (errorCode === 'email_not_confirmed') {
+    type = 'email_not_confirmed';
+  }
+  // Fall back to message-based matching with specific phrases/patterns
+  else if (errorMessage.includes('user already registered')) {
+    type = 'email_already_exists';
+  } else if (errorMessage.includes('invalid login credentials')) {
+    type = 'invalid_credentials';
+  } else if (
+    errorMessage.includes('rate limit') ||
+    errorMessage.includes('too many requests')
+  ) {
     type = 'rate_limit_exceeded';
   } else if (
-    errorMessage.includes('expired') ||
-    errorMessage.includes('invalid')
+    errorMessage.includes('magic link expired') ||
+    errorMessage.includes('invalid magic link') ||
+    errorMessage.includes('otp has expired')
   ) {
     type = 'invalid_magic_link';
-  } else if (
-    errorMessage.includes('email not confirmed') ||
-    errorCode === 'email_not_confirmed'
-  ) {
+  } else if (errorMessage.includes('email not confirmed')) {
     type = 'email_not_confirmed';
   }
 

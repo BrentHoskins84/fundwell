@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { isRedirectError } from 'next/dist/client/components/redirect-error';
 import { Check, X, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -31,11 +32,12 @@ export function UpgradeModal({ isOpen, onClose, proPrice, currentCount }: Upgrad
     try {
       await createCheckoutAction({ price: proPrice });
     } catch (error) {
-      // redirect() throws a special error that Next.js handles
-      // Re-throw it, but catch other errors
-      if (error instanceof Error && error.message === 'NEXT_REDIRECT') {
+      // redirect() throws a special error that Next.js handles - re-throw it
+      if (isRedirectError(error)) {
         throw error;
       }
+      // Handle actual errors - consider adding toast notification here
+      console.error('Checkout failed:', error);
       setIsLoading(false);
     }
   };
