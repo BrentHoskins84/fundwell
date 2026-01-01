@@ -1,9 +1,11 @@
 'use server';
 
+import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { winnerEmail } from '@/features/emails/templates/winner-email';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
 import { getURL } from '@/utils/get-url';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
@@ -49,17 +51,17 @@ export async function saveScores(contestId: string, scores: ScoreInput[]): Promi
       .single();
 
     if (contestError || !contest) {
-      throw new Error('Contest not found');
+      throw new Error(ContestErrors.NOT_FOUND);
     }
 
     // Verify contest is in progress
     if (contest.status !== 'in_progress') {
-      throw new Error('Scores can only be entered when the contest is in progress');
+      throw new Error(ContestErrors.SCORES_ONLY_IN_PROGRESS);
     }
 
     // Verify row and column numbers are assigned
     if (!contest.row_numbers || !contest.col_numbers) {
-      throw new Error('Grid numbers must be assigned before entering scores');
+      throw new Error(ContestErrors.NUMBERS_REQUIRED);
     }
 
     // Fetch all squares for this contest
@@ -112,7 +114,7 @@ export async function saveScores(contestId: string, scores: ScoreInput[]): Promi
           home_score: score.homeScore,
           away_score: score.awayScore,
           winning_square_id: winningSquareId,
-          entered_at: new Date().toISOString(),
+          entered_at: getCurrentISOString(),
         },
         {
           onConflict: 'contest_id,quarter',

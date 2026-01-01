@@ -4,7 +4,6 @@ import { useState, useTransition } from 'react';
 import Image from 'next/image';
 import { Check, Copy, DollarSign, Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
-import { z } from 'zod';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -22,18 +21,10 @@ import { generatePaymentUrl } from '@/utils/payment-url-generator';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 import { claimSquare } from '../actions/claim-square';
+import { ClaimSquareFormData,claimSquareSchema } from '../validation';
 
 type PaymentOption = Database['public']['Tables']['payment_options']['Row'];
 type PaymentOptionType = Database['public']['Enums']['payment_option_type'];
-
-const claimSquareSchema = z.object({
-  firstName: z.string().min(1, 'First name is required').max(50, 'First name is too long'),
-  lastName: z.string().min(1, 'Last name is required').max(50, 'Last name is too long'),
-  email: z.string().min(1, 'Email is required').email('Please enter a valid email'),
-  venmoHandle: z.string().max(32, 'Handle is too long').optional(),
-});
-
-type ClaimSquareFormData = z.infer<typeof claimSquareSchema>;
 
 interface ClaimSquareModalProps {
   isOpen: boolean;

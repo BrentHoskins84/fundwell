@@ -1,10 +1,12 @@
 'use server';
 
+import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { getContestById } from '@/features/contests/queries/get-contest';
 import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { paymentConfirmedEmail } from '@/features/emails/templates/payment-confirmed-email';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
 import { getURL } from '@/utils/get-url';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
@@ -32,7 +34,7 @@ export async function updateSquareStatus(
   if (!squareId || !contestId || !newStatus) {
     return {
       data: null,
-      error: { message: 'All required fields must be provided' },
+      error: { message: ContestErrors.ALL_FIELDS_REQUIRED },
     };
   }
 
@@ -41,7 +43,7 @@ export async function updateSquareStatus(
   if (!validStatuses.includes(newStatus)) {
     return {
       data: null,
-      error: { message: 'Invalid status value' },
+      error: { message: ContestErrors.INVALID_STATUS },
     };
   }
 
@@ -55,7 +57,7 @@ export async function updateSquareStatus(
       .single();
 
     if (squareError || !square) {
-      throw new Error('Square not found');
+      throw new Error(ContestErrors.SQUARE_NOT_FOUND);
     }
 
     // Build update data based on new status
@@ -79,7 +81,7 @@ export async function updateSquareStatus(
       // Set paid_at timestamp when marking as paid
       updateData = {
         ...updateData,
-        paid_at: new Date().toISOString(),
+        paid_at: getCurrentISOString(),
       };
     } else if (newStatus === 'pending') {
       // Clear paid_at when reverting to pending
@@ -97,7 +99,7 @@ export async function updateSquareStatus(
       .eq('contest_id', contestId);
 
     if (updateError) {
-      throw new Error('Failed to update square status');
+      throw new Error(ContestErrors.FAILED_TO_UPDATE);
     }
 
     // Send confirmation email when marking as paid (don't block on failure)

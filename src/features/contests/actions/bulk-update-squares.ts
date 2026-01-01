@@ -1,7 +1,9 @@
 'use server';
 
+import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
 
@@ -20,7 +22,7 @@ export async function bulkUpdateSquares({
 }: BulkUpdateSquaresInput): Promise<ActionResponse<{ updated: number }>> {
   return withContestOwnership<{ updated: number }>(contestId, async (user, supabase) => {
     if (squareIds.length === 0) {
-      throw new Error('No squares selected');
+      throw new Error(ContestErrors.NO_SQUARES_SELECTED);
     }
 
     // Build update data based on new status
@@ -33,7 +35,7 @@ export async function bulkUpdateSquares({
 
     // Set paid_at timestamp when marking as paid
     if (newStatus === 'paid') {
-      updateData.paid_at = new Date().toISOString();
+      updateData.paid_at = getCurrentISOString();
     } else if (newStatus === 'pending') {
       updateData.paid_at = null;
     }
@@ -46,7 +48,7 @@ export async function bulkUpdateSquares({
       .in('id', squareIds);
 
     if (updateError) {
-      throw new Error('Failed to update squares');
+      throw new Error(ContestErrors.FAILED_TO_UPDATE);
     }
 
     return { updated: count ?? squareIds.length };

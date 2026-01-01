@@ -1,6 +1,8 @@
 'use server';
 
+import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
 
 import { withContestOwnership } from '../middleware/auth-middleware';
 
@@ -12,12 +14,12 @@ export async function deleteContest(contestId: string): Promise<ActionResponse<n
   return withContestOwnership<null>(contestId, async (user, supabase) => {
     const { error: deleteError } = await supabase
       .from('contests')
-      .update({ deleted_at: new Date().toISOString() })
+      .update({ deleted_at: getCurrentISOString() })
       .eq('id', contestId)
       .eq('owner_id', user.id);
 
     if (deleteError) {
-      throw new Error('Failed to delete');
+      throw new Error(ContestErrors.FAILED_TO_DELETE);
     }
 
     return null;
