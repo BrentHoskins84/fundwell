@@ -12,7 +12,7 @@ interface SendEmailSafeParams {
 
 export async function sendEmailSafe(params: SendEmailSafeParams): Promise<boolean> {
   try {
-    await sendEmail({
+    const result = await sendEmail({
       to: params.to,
       subject: params.template.subject,
       html: params.template.html,
@@ -20,10 +20,23 @@ export async function sendEmailSafe(params: SendEmailSafeParams): Promise<boolea
       squareId: params.squareId,
       emailType: params.emailType,
     });
+
+    if (!result.success) {
+      logger.error('sendEmailSafe', result.error, {
+        emailType: params.emailType,
+        to: params.to,
+        contestId: params.contestId,
+      });
+      return false;
+    }
+
     return true;
   } catch (error) {
-    const { emailType } = params;
-    logger.error('sendEmailSafe', error, { emailType, to: params.to, contestId: params.contestId });
+    logger.error('sendEmailSafe', error, {
+      emailType: params.emailType,
+      to: params.to,
+      contestId: params.contestId,
+    });
     return false;
   }
 }

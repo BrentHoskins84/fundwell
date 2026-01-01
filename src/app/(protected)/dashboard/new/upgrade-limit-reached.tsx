@@ -6,7 +6,7 @@ import { ArrowLeft, Crown, Zap } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Price } from '@/features/pricing/types';
+import type { Price } from '@/features/pricing/types';
 import { UpgradeModal } from '@/features/subscriptions/components/upgrade-modal';
 
 interface UpgradeLimitReachedProps {

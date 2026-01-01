@@ -15,12 +15,12 @@ const ERROR_MESSAGES: Record<AuthErrorType, string> = {
   generic_error: 'Something went wrong. Please try again.',
 };
 
-export function getUserFriendlyErrorMessage(error: any): {
+export function getUserFriendlyErrorMessage(error: unknown): {
   type: AuthErrorType;
   message: string;
 } {
-  const errorMessage = error?.message?.toLowerCase() ?? '';
-  const errorCode = error?.code ?? '';
+  const errorMessage = (error as { message?: string })?.message?.toLowerCase() ?? '';
+  const errorCode = (error as { code?: string })?.code ?? '';
 
   let type: AuthErrorType = 'generic_error';
 

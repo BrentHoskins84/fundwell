@@ -16,6 +16,6 @@ export const ContestErrors = {
   FAILED_TO_DELETE: 'Failed to delete',
 } as const;
 
-export const MAX_SQUARES_REACHED = (max: number) =>
+export const MAX_SQUARES_REACHED = (max: number): string =>
   `You have already claimed the maximum of ${max} square(s) for this contest.`;
 

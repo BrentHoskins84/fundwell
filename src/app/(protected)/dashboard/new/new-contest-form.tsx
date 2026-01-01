@@ -84,11 +84,10 @@ export function NewContestForm() {
     }
   }
 
-  async function onSubmit(data: unknown) {
+  async function onSubmit(data: CreateContestInput) {
     setIsSubmitting(true);
     try {
-      const response = await createContest(data as CreateContestInput);
-
+      const response = await createContest(data);
       if (response?.error) {
         toast({
           variant: 'destructive',

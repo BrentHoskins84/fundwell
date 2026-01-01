@@ -1,4 +1,4 @@
-type EmailLayoutOptions = {
+interface EmailLayoutOptions {
   headerStyle?: 'default' | 'gradient';
   children: string;
 };
