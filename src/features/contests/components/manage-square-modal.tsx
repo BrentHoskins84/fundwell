@@ -14,11 +14,10 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { toast } from '@/components/ui/use-toast';
-import { Database } from '@/libs/supabase/types';
+import { formatDateTime } from '@/utils/date-formatters';
 
 import { updateSquareStatus } from '../actions/update-square-status';
-
-type PaymentStatus = Database['public']['Enums']['payment_status'];
+import { PaymentStatus } from '../types';
 
 export interface ManageSquare {
   id: string;
@@ -65,17 +64,6 @@ function StatusBadge({ status }: { status: PaymentStatus }) {
   }
 }
 
-function formatDate(dateString: string | null): string {
-  if (!dateString) return 'N/A';
-  return new Date(dateString).toLocaleDateString('en-US', {
-    month: 'short',
-    day: 'numeric',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
-  });
-}
-
 export function ManageSquareModal({
   isOpen,
   onClose,
@@ -96,7 +84,7 @@ export function ManageSquareModal({
         newStatus,
       });
 
-      if (result.error) {
+      if (result?.error) {
         toast({
           title: 'Error',
           description: result.error.message,
@@ -197,7 +185,7 @@ export function ManageSquareModal({
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-zinc-500" />
                   <span className="text-sm text-zinc-400">
-                    Claimed {formatDate(square.claimed_at)}
+                    Claimed {formatDateTime(square.claimed_at)}
                   </span>
                 </div>
               )}
@@ -207,7 +195,7 @@ export function ManageSquareModal({
                 <div className="flex items-center gap-3">
                   <Calendar className="h-4 w-4 text-green-500" />
                   <span className="text-sm text-green-400">
-                    Paid {formatDate(square.paid_at)}
+                    Paid {formatDateTime(square.paid_at)}
                   </span>
                 </div>
               )}

@@ -1,10 +1,11 @@
 'use server';
 
-import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
-import { Database } from '@/libs/supabase/types';
+import { ContestErrors } from '@/features/contests/constants/error-messages';
 import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
 
-type PaymentStatus = Database['public']['Enums']['payment_status'];
+import { withContestOwnership } from '../middleware/auth-middleware';
+import { PaymentStatus } from '../types';
 
 interface BulkUpdateSquaresInput {
   contestId: string;
@@ -17,32 +18,9 @@ export async function bulkUpdateSquares({
   squareIds,
   newStatus,
 }: BulkUpdateSquaresInput): Promise<ActionResponse<{ updated: number }>> {
-  try {
-    const supabase = await createSupabaseServerClient();
-
-    // Get current user
-    const {
-      data: { user },
-    } = await supabase.auth.getUser();
-
-    if (!user) {
-      return { data: null, error: { message: 'Unauthorized' } };
-    }
-
-    // Verify contest ownership
-    const { data: contest, error: contestError } = await supabase
-      .from('contests')
-      .select('id')
-      .eq('id', contestId)
-      .eq('owner_id', user.id)
-      .single();
-
-    if (contestError || !contest) {
-      return { data: null, error: { message: 'Contest not found or access denied' } };
-    }
-
+  return withContestOwnership<{ updated: number }>(contestId, async (user, supabase) => {
     if (squareIds.length === 0) {
-      return { data: null, error: { message: 'No squares selected' } };
+      throw new Error(ContestErrors.NO_SQUARES_SELECTED);
     }
 
     // Build update data based on new status
@@ -55,7 +33,7 @@ export async function bulkUpdateSquares({
 
     // Set paid_at timestamp when marking as paid
     if (newStatus === 'paid') {
-      updateData.paid_at = new Date().toISOString();
+      updateData.paid_at = getCurrentISOString();
     } else if (newStatus === 'pending') {
       updateData.paid_at = null;
     }
@@ -68,11 +46,9 @@ export async function bulkUpdateSquares({
       .in('id', squareIds);
 
     if (updateError) {
-      return { data: null, error: { message: `Failed to update squares: ${updateError.message}` } };
+      throw new Error(ContestErrors.FAILED_TO_UPDATE);
     }
 
-    return { data: { updated: count ?? squareIds.length }, error: null };
-  } catch (error) {
-    return { data: null, error: { message: 'An unexpected error occurred' } };
-  }
+    return { updated: count ?? squareIds.length };
+  })();
 }
