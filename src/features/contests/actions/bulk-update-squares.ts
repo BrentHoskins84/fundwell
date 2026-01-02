@@ -18,7 +18,7 @@ export async function bulkUpdateSquares({
   squareIds,
   newStatus,
 }: BulkUpdateSquaresInput): Promise<ActionResponse<{ updated: number }>> {
-  return withContestOwnership<{ updated: number }>(contestId, async (user, supabase) => {
+  return withContestOwnership<{ updated: number }>(contestId, async (user, supabase, contest) => {
     if (squareIds.length === 0) {
       throw new Error(ContestErrors.NO_SQUARES_SELECTED);
     }

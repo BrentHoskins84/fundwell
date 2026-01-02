@@ -39,17 +39,9 @@ export async function assignGridNumbers({
   colNumbers,
   autoGenerate,
 }: AssignGridNumbersParams): Promise<ActionResponse<AssignGridNumbersResult>> {
-  
-  return withContestOwnership<AssignGridNumbersResult>(contestId, async (user, supabase) => {
-    // Fetch contest status
-    const { data: contest } = await supabase
-      .from('contests')
-      .select('status')
-      .eq('id', contestId)
-      .single();
-
+  return withContestOwnership<AssignGridNumbersResult>(contestId, async (user, supabase, contest) => {
     // Verify contest status allows number assignment
-    if (contest?.status === ContestStatus.IN_PROGRESS || contest?.status === ContestStatus.COMPLETED) {
+    if (contest.status === ContestStatus.IN_PROGRESS || contest.status === ContestStatus.COMPLETED) {
       throw new Error('Cannot assign numbers to a contest that is in progress or completed');
     }
 

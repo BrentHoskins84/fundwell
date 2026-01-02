@@ -2,6 +2,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { hasContestAccess } from '@/features/contests/actions/verify-pin';
+import { requireAuth, requireContestOwnership } from '@/features/contests/middleware/auth-middleware';
 import { getContestPin, getPaymentOptionsForContest, getScoresForContest, getSquaresForContest } from '@/features/contests/queries';
 import { getPublicContestBySlug } from '@/features/contests/queries/get-contest-safe';
 import { hasActiveSubscription } from '@/features/subscriptions/has-active-subscription';
@@ -39,6 +40,17 @@ export default async function ContestPage({ params }: ContestPageProps) {
   // Check if user has access (either no PIN required or valid cookie)
   const hasAccess = await hasContestAccess(contest.slug, accessPin);
 
+  // Check if current user is the contest owner
+  let isOwner = false;
+  try {
+    const { user, supabase } = await requireAuth();
+    await requireContestOwnership(supabase, user.id, contest.id);
+    isOwner = true;
+  } catch {
+    // User is not authenticated or not the owner
+    isOwner = false;
+  }
+
   const ownerHasActiveSubscription = await hasActiveSubscription(contest.owner_id);
   const showAds = !ownerHasActiveSubscription;
 
@@ -51,7 +63,7 @@ export default async function ContestPage({ params }: ContestPageProps) {
       ])
     : [[], [], []];
 
-  // Note: access_pin is included for the share modal to display to contest owners
+  // Only include access_pin for contest owners (for share modal)
   const contestForClient = {
     id: contest.id,
     name: contest.name,
@@ -68,7 +80,7 @@ export default async function ContestPage({ params }: ContestPageProps) {
     hero_image_url: contest.hero_image_url,
     org_image_url: contest.org_image_url,
     requiresPin: Boolean(accessPin),
-    access_pin: accessPin,
+    access_pin: isOwner ? accessPin : null,
     row_numbers: contest.row_numbers,
     col_numbers: contest.col_numbers,
     // Payout percentages for winner display

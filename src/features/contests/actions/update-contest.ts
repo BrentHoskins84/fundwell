@@ -72,7 +72,7 @@ export async function updateContest(
   contestId: string,
   updates: ContestUpdate
 ): Promise<ActionResponse<{ id: string }>> {
-  return withContestOwnership<{ id: string }>(contestId, async (user, supabase) => {
+  return withContestOwnership<{ id: string }>(contestId, async (user, supabase, contest) => {
     // Validate status transitions
     if (updates.status === ContestStatus.IN_PROGRESS) {
       const validationError = await validateInProgressTransition(supabase, contestId, user.id);

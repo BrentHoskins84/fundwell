@@ -2,7 +2,6 @@
 
 import { PaymentStatus, PaymentStatusType } from '@/features/contests/constants';
 import { ContestErrors } from '@/features/contests/constants/error-messages';
-import { getContestById } from '@/features/contests/queries/get-contest';
 import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { paymentConfirmedEmail } from '@/features/emails/templates/payment-confirmed-email';
 import { Database } from '@/libs/supabase/types';
@@ -50,7 +49,7 @@ export async function updateSquareStatus(
     };
   }
 
-  return withContestOwnership<{ success: boolean }>(contestId, async (user, supabase) => {
+  return withContestOwnership<{ success: boolean }>(contestId, async (user, supabase, contest) => {
     // Verify square belongs to contest
     const { data: square, error: squareError } = await supabase
       .from('squares')
@@ -107,26 +106,23 @@ export async function updateSquareStatus(
 
     // Send confirmation email when marking as paid (don't block on failure)
     if (newStatus === PaymentStatus.PAID && square.claimant_email) {
-      const contestDetails = await getContestById(contestId);
-      if (contestDetails) {
-        const contestUrl = `${getURL()}/contest/${contestDetails.slug}`;
+      const contestUrl = `${getURL()}/contest/${contest.slug}`;
 
-        sendEmailSafe({
-          to: square.claimant_email,
-          template: paymentConfirmedEmail({
-            participantName: square.claimant_first_name || 'there',
-            contestName: contestDetails.name,
-            rowTeamName: contestDetails.row_team_name,
-            colTeamName: contestDetails.col_team_name,
-            rowIndex: square.row_index,
-            colIndex: square.col_index,
-            contestUrl,
-          }),
-          contestId,
-          squareId: square.id,
-          emailType: 'payment_confirmed',
-        });
-      }
+      sendEmailSafe({
+        to: square.claimant_email,
+        template: paymentConfirmedEmail({
+          participantName: square.claimant_first_name || 'there',
+          contestName: contest.name,
+          rowTeamName: contest.row_team_name,
+          colTeamName: contest.col_team_name,
+          rowIndex: square.row_index,
+          colIndex: square.col_index,
+          contestUrl,
+        }),
+        contestId,
+        squareId: square.id,
+        emailType: 'payment_confirmed',
+      });
     }
 
     return { success: true };

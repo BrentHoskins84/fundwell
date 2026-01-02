@@ -1,3 +1,4 @@
+import { Contest } from '@/features/contests/types';
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
 import { Database } from '@/libs/supabase/types';
 import { ActionResponse } from '@/types/action-response';
@@ -41,10 +42,10 @@ export async function requireContestOwnership(
   supabase: SupabaseClient<Database>,
   userId: string,
   contestId: string
-) {
+): Promise<Contest> {
   const { data: contest, error } = await supabase
     .from('contests')
-    .select('id, owner_id')
+    .select('*')
     .eq('id', contestId)
     .single();
 
@@ -64,7 +65,7 @@ export function withContestOwnership<T>(
   action: (
     user: User,
     supabase: SupabaseClient<Database>,
-    contest: { id: string; owner_id: string }
+    contest: Contest
   ) => Promise<T>
 ): () => Promise<ActionResponse<T>> {
   return async () => {
