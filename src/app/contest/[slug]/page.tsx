@@ -3,7 +3,12 @@ import Link from 'next/link';
 import { Button } from '@/components/ui/button';
 import { hasContestAccess } from '@/features/contests/actions/verify-pin';
 import { requireAuth, requireContestOwnership } from '@/features/contests/middleware/auth-middleware';
-import { getContestPin, getPaymentOptionsForContest, getScoresForContest, getSquaresForContest } from '@/features/contests/queries';
+import {
+  getContestPin,
+  getPaymentOptionsForContest,
+  getScoresForContest,
+  getSquaresForContest,
+} from '@/features/contests/queries';
 import { getPublicContestBySlug } from '@/features/contests/queries/get-contest-safe';
 import { hasActiveSubscription } from '@/features/subscriptions/has-active-subscription';
 
@@ -20,14 +25,14 @@ export default async function ContestPage({ params }: ContestPageProps) {
 
   if (!contest) {
     return (
-      <div className="flex min-h-screen flex-col items-center justify-center bg-zinc-900 px-4">
-        <div className="text-center">
-          <h1 className="text-4xl font-bold text-white">Contest Not Found</h1>
-          <p className="mt-4 text-zinc-400">
+      <div className='flex min-h-screen flex-col items-center justify-center bg-zinc-900 px-4'>
+        <div className='text-center'>
+          <h1 className='text-4xl font-bold text-white'>Contest Not Found</h1>
+          <p className='mt-4 text-zinc-400'>
             The contest you&apos;re looking for doesn&apos;t exist or may have been removed.
           </p>
-          <Link href="/">
-            <Button className="mt-6">← Back to Home</Button>
+          <Link href='/'>
+            <Button className='mt-6'>← Back to Home</Button>
           </Link>
         </div>
       </div>
@@ -43,11 +48,10 @@ export default async function ContestPage({ params }: ContestPageProps) {
   // Check if current user is the contest owner
   let isOwner = false;
   try {
-    const { user, supabase } = await requireAuth();
-    await requireContestOwnership(supabase, user.id, contest.id);
-    isOwner = true;
+    const { user } = await requireAuth();
+    isOwner = user.id === contest.owner_id;
   } catch {
-    // User is not authenticated or not the owner
+    // User is not authenticated
     isOwner = false;
   }
 
@@ -55,7 +59,7 @@ export default async function ContestPage({ params }: ContestPageProps) {
   const showAds = !ownerHasActiveSubscription;
 
   // Fetch squares, payment options, and scores only when access is granted
-  const [squares, paymentOptions, scores] = hasAccess 
+  const [squares, paymentOptions, scores] = hasAccess
     ? await Promise.all([
         getSquaresForContest(contest.id),
         getPaymentOptionsForContest(contest.id),
@@ -125,4 +129,3 @@ export async function generateMetadata({ params }: ContestPageProps) {
     description: contest.description || `Join ${contest.name} - ${contest.row_team_name} vs ${contest.col_team_name}`,
   };
 }
-

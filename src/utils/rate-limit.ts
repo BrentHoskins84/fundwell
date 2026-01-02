@@ -45,10 +45,10 @@ const DEFAULT_WINDOW_MS = 60000; // 60 seconds
  * @param options.windowMs - Time window in milliseconds (default: 60000)
  * @returns Rate limit check result with success status, remaining requests, and reset time
  */
-export async function checkRateLimit(
+export function checkRateLimit(
   key: string,
   options?: RateLimitOptions
-): Promise<RateLimitResult> {
+): RateLimitResult {
   const maxRequests = options?.maxRequests ?? DEFAULT_MAX_REQUESTS;
   const windowMs = options?.windowMs ?? DEFAULT_WINDOW_MS;
   const now = Date.now();
@@ -56,7 +56,7 @@ export async function checkRateLimit(
   const entry = rateLimitStore.get(key);
 
   // If no entry or window expired, create/reset entry
-  if (!entry || now - entry.windowStart >= windowMs) {
+  if (!entry || now - entry.windowStart >= entry.windowMs) {
     const newEntry: RateLimitEntry = {
       count: 1,
       windowStart: now,
@@ -75,7 +75,7 @@ export async function checkRateLimit(
   const remaining = Math.max(0, maxRequests - entry.count);
   const success = entry.count <= maxRequests;
 
-  // Clean up expired entries periodically (every 100 checks)
+  // Clean up expired entries periodically (1% chance per check, ~100 checks on average)
   if (rateLimitStore.size > 0 && Math.random() < 0.01) {
     cleanupExpiredEntries();
   }
@@ -83,7 +83,7 @@ export async function checkRateLimit(
   return {
     success,
     remaining,
-    resetAt: entry.windowStart + windowMs,
+    resetAt: entry.windowStart + entry.windowMs,
   };
 }
 
