@@ -1,9 +1,9 @@
 'use server';
 
 import { ContestStatus } from '@/features/contests/constants';
-import { Contest, ContestUpdate } from '@/features/contests/types';
-import { Database } from '@/libs/supabase/types';
-import { ActionResponse } from '@/types/action-response';
+import type { Contest, ContestUpdate } from '@/features/contests/types';
+import type { Database } from '@/libs/supabase/types';
+import type { ActionResponse } from '@/types/action-response';
 import { SupabaseClient } from '@supabase/supabase-js';
 
 import { withContestOwnership } from '../middleware/auth-middleware';

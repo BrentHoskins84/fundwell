@@ -7,7 +7,7 @@
  *
  * @example
  * ```ts
- * const result = await checkRateLimit('user-123', { maxRequests: 10, windowMs: 60000 });
+ * const result = checkRateLimit('user-123', { maxRequests: 10, windowMs: 60000 });
  * if (!result.success) {
  *   return new Response('Rate limit exceeded', { status: 429 });
  * }
@@ -45,12 +45,21 @@ const DEFAULT_WINDOW_MS = 60000; // 60 seconds
  * @param options.windowMs - Time window in milliseconds (default: 60000)
  * @returns Rate limit check result with success status, remaining requests, and reset time
  */
-export function checkRateLimit(
-  key: string,
-  options?: RateLimitOptions
-): RateLimitResult {
+export function checkRateLimit(key: string, options?: RateLimitOptions): RateLimitResult {
+  if (!key || key.trim().length === 0) {
+    throw new Error('Rate limit key must be a non-empty string');
+  }
+
   const maxRequests = options?.maxRequests ?? DEFAULT_MAX_REQUESTS;
   const windowMs = options?.windowMs ?? DEFAULT_WINDOW_MS;
+
+  if (maxRequests <= 0) {
+    throw new Error('maxRequests must be a positive number');
+  }
+  if (windowMs <= 0) {
+    throw new Error('windowMs must be a positive number');
+  }
+
   const now = Date.now();
 
   const entry = rateLimitStore.get(key);
@@ -98,4 +107,3 @@ function cleanupExpiredEntries(): void {
     }
   }
 }
-

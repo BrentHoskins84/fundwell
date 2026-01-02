@@ -2,7 +2,7 @@ import Link from 'next/link';
 
 import { Button } from '@/components/ui/button';
 import { hasContestAccess } from '@/features/contests/actions/verify-pin';
-import { requireAuth, requireContestOwnership } from '@/features/contests/middleware/auth-middleware';
+import { requireAuth } from '@/features/contests/middleware/auth-middleware';
 import {
   getContestPin,
   getPaymentOptionsForContest,
