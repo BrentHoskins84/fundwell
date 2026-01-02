@@ -110,8 +110,8 @@ function FootballPayoutsForm({ contest }: { contest: Contest }) {
 
   const watchedValues = watch();
   const prizeType = watchedValues.prize_type ?? 'percentage';
-  const totalPercent = (watchedValues.payout_q1_percent || 0) + (watchedValues.payout_q2_percent || 0) +
-    (watchedValues.payout_q3_percent || 0) + (watchedValues.payout_final_percent || 0);
+  const totalPercent = Number(watchedValues.payout_q1_percent || 0) + Number(watchedValues.payout_q2_percent || 0) +
+    Number(watchedValues.payout_q3_percent || 0) + Number(watchedValues.payout_final_percent || 0);
   const totalPot = (watchedValues.square_price || 0) * 100;
   const totalPayout = (totalPot * totalPercent) / 100;
   const fundraiserKeeps = totalPot - totalPayout;
@@ -354,10 +354,10 @@ function BaseballPayoutsForm({ contest }: { contest: Contest }) {
   });
 
   const watchedValues = watch();
-  const totalPercent = (watchedValues.payout_game1_percent || 0) + (watchedValues.payout_game2_percent || 0) +
-    (watchedValues.payout_game3_percent || 0) + (watchedValues.payout_game4_percent || 0) +
-    (watchedValues.payout_game5_percent || 0) + (watchedValues.payout_game6_percent || 0) +
-    (watchedValues.payout_game7_percent || 0);
+  const totalPercent = Number(watchedValues.payout_game1_percent || 0) + Number(watchedValues.payout_game2_percent || 0) +
+    Number(watchedValues.payout_game3_percent || 0) + Number(watchedValues.payout_game4_percent || 0) +
+    Number(watchedValues.payout_game5_percent || 0) + Number(watchedValues.payout_game6_percent || 0) +
+    Number(watchedValues.payout_game7_percent || 0);
   const totalPot = (watchedValues.square_price || 0) * 100;
   const totalPayout = (totalPot * totalPercent) / 100;
   const fundraiserKeeps = totalPot - totalPayout;
