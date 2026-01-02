@@ -516,7 +516,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      soft_delete_contest: { Args: { contest_id: string }; Returns: boolean }
     }
     Enums: {
       contest_status: "draft" | "open" | "locked" | "in_progress" | "completed"
