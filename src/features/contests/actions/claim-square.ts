@@ -1,10 +1,17 @@
 'use server';
 
+import { ContestStatus, PaymentStatus } from '@/features/contests/constants';
+import { ContestErrors, MAX_SQUARES_REACHED } from '@/features/contests/constants/error-messages';
 import { getPaymentOptionsForContest } from '@/features/contests/queries/get-payment-options';
-import { sendEmail } from '@/features/emails/send-email';
+import { sendEmailSafe } from '@/features/emails/send-email-safe';
 import { squareClaimedEmail } from '@/features/emails/templates/square-claimed-email';
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
+import { ActionResponse } from '@/types/action-response';
+import { getCurrentISOString } from '@/utils/date-formatters';
+import { sanitizeEmail } from '@/utils/email-validator';
 import { getURL } from '@/utils/get-url';
+import { logger } from '@/utils/logger';
+import { checkRateLimit } from '@/utils/rate-limit';
 
 interface ClaimSquareInput {
   squareId: string;
@@ -15,30 +22,38 @@ interface ClaimSquareInput {
   venmoHandle?: string;
 }
 
-interface ClaimSquareResponse {
-  data: {
-    success: boolean;
-    square?: {
-      id: string;
-      row_index: number;
-      col_index: number;
-    };
-  } | null;
-  error: { message: string } | null;
-}
-
 /**
  * Claims a square for a participant.
  * Validates availability and per-person limits before claiming.
  */
-export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareResponse> {
+export async function claimSquare(
+  input: ClaimSquareInput
+): Promise<ActionResponse<{ square: { id: string; row_index: number; col_index: number } }>> {
   const { squareId, contestId, firstName, lastName, email, venmoHandle } = input;
 
-  // Validate required fields
-  if (!squareId || !contestId || !firstName || !lastName || !email) {
+  // Validate and sanitize email
+  const sanitizedEmail = sanitizeEmail(email);
+  if (!sanitizedEmail) {
     return {
       data: null,
-      error: { message: 'All required fields must be provided' },
+      error: { message: 'Invalid email address format' },
+    };
+  }
+
+  // Rate limit check
+  const rateLimit = await checkRateLimit(`claim:${sanitizedEmail}`, { maxRequests: 10, windowMs: 60000 });
+  if (!rateLimit.success) {
+    return {
+      data: null,
+      error: { message: 'Too many requests. Please wait a moment and try again.' },
+    };
+  }
+  
+  // Validate required fields
+  if (!squareId || !contestId || !firstName || !lastName) {
+    return {
+      data: null,
+      error: { message: ContestErrors.ALL_FIELDS_REQUIRED },
     };
   }
 
@@ -52,19 +67,18 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
     .single();
 
   if (contestError || !contest) {
-    // TODO: Replace with proper error handling
-    console.error('Error fetching contest:', contestError);
+    logger.error('claimSquare', contestError, { contestId, squareId });
     return {
       data: null,
-      error: { message: 'Contest not found' },
+      error: { message: ContestErrors.NOT_FOUND },
     };
   }
 
   // Check contest is open for claims
-  if (contest.status !== 'open') {
+  if (contest.status !== ContestStatus.OPEN) {
     return {
       data: null,
-      error: { message: 'This contest is not currently accepting claims' },
+      error: { message: ContestErrors.NOT_OPEN },
     };
   }
 
@@ -77,49 +91,44 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
     .single();
 
   if (squareError || !square) {
-    // TODO: Replace with proper error handling
-    console.error('Error fetching square:', squareError);
+    logger.error('claimSquare', squareError, { contestId, squareId });
     return {
       data: null,
-      error: { message: 'Square not found' },
+      error: { message: ContestErrors.SQUARE_NOT_FOUND },
     };
   }
 
   // Check square is available
-  if (square.payment_status !== 'available') {
+  if (square.payment_status !== PaymentStatus.AVAILABLE) {
     return {
-      data: { success: false },
-      error: { message: 'This square has already been claimed. Please select another.' },
+      data: null,
+      error: { message: ContestErrors.SQUARE_TAKEN },
     };
   }
 
   // Check per-person limit if set
   if (contest.max_squares_per_person) {
-    const normalizedEmail = email.toLowerCase().trim();
 
     const { count, error: countError } = await supabase
       .from('squares')
       .select('id', { count: 'exact', head: true })
       .eq('contest_id', contestId)
-      .ilike('claimant_email', normalizedEmail)
-      .neq('payment_status', 'available');
+      .ilike('claimant_email', sanitizedEmail)
+      .neq('payment_status', PaymentStatus.AVAILABLE);
 
     if (countError) {
-      // TODO: Replace with proper error handling
-      console.error('Error counting squares:', countError);
+      logger.error('claimSquare', countError, { contestId, email });
       return {
         data: null,
-        error: { message: 'Failed to verify square limit. Please try again.' },
+        error: { message: ContestErrors.FAILED_TO_CLAIM },
       };
     }
 
     if (count !== null && count >= contest.max_squares_per_person) {
       return {
-        data: { success: false },
+        data: null,
         error: {
-          message: `You have already claimed the maximum of ${contest.max_squares_per_person} square${
-            contest.max_squares_per_person > 1 ? 's' : ''
-          } for this contest.`,
+          message: MAX_SQUARES_REACHED(contest.max_squares_per_person),
         },
       };
     }
@@ -131,48 +140,48 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
     .update({
       claimant_first_name: firstName.trim(),
       claimant_last_name: lastName.trim(),
-      claimant_email: email.toLowerCase().trim(),
+      claimant_email: sanitizedEmail,
       claimant_venmo: venmoHandle?.trim() || null,
-      payment_status: 'pending',
-      claimed_at: new Date().toISOString(),
+      payment_status: PaymentStatus.PENDING,
+      claimed_at: getCurrentISOString(),
     })
     .eq('id', squareId)
-    .eq('payment_status', 'available') // Ensure still available (race condition protection)
+    .eq('payment_status', PaymentStatus.AVAILABLE) // Ensure still available (race condition protection)
     .select('id, row_index, col_index')
     .single();
 
   if (updateError) {
-    // TODO: Replace with proper error handling
-    console.error('Error claiming square:', updateError);
+    logger.error('claimSquare', updateError, { contestId, squareId });
 
     // Check if it was a race condition (no rows updated)
     if (updateError.code === 'PGRST116') {
       return {
-        data: { success: false },
-        error: { message: 'This square was just claimed by someone else. Please select another.' },
+        data: null,
+        error: { message: ContestErrors.RACE_CONDITION },
       };
     }
 
     return {
       data: null,
-      error: { message: 'Failed to claim square. Please try again.' },
+      error: { message: ContestErrors.FAILED_TO_CLAIM },
     };
   }
 
   if (!updatedSquare) {
     // No rows updated - race condition, square was taken
     return {
-      data: { success: false },
-      error: { message: 'This square was just claimed by someone else. Please select another.' },
+      data: null,
+      error: { message: ContestErrors.RACE_CONDITION },
     };
   }
 
   // Send confirmation email (don't block on failure)
-  try {
-    const paymentOptions = await getPaymentOptionsForContest(contestId);
-    const contestUrl = `${getURL()}/contest/${contest.slug}`;
+  const paymentOptions = await getPaymentOptionsForContest(contestId);
+  const contestUrl = `${getURL()}/contest/${contest.slug}`;
 
-    const { subject, html } = squareClaimedEmail({
+  sendEmailSafe({
+    to: sanitizedEmail,
+    template: squareClaimedEmail({
       participantName: firstName,
       contestName: contest.name,
       rowTeamName: contest.row_team_name,
@@ -186,24 +195,14 @@ export async function claimSquare(input: ClaimSquareInput): Promise<ClaimSquareR
         handle: opt.handle_or_link,
         link: opt.handle_or_link.startsWith('http') ? opt.handle_or_link : undefined,
       })),
-    });
-
-    await sendEmail({
-      to: email,
-      subject,
-      html,
-      contestId,
-      squareId: updatedSquare.id,
-      emailType: 'square_claimed',
-    });
-  } catch (emailError) {
-    // Log error but don't fail the claim
-    console.error('Failed to send square claimed email:', emailError);
-  }
+    }),
+    contestId,
+    squareId: updatedSquare.id,
+    emailType: 'square_claimed',
+  });
 
   return {
     data: {
-      success: true,
       square: {
         id: updatedSquare.id,
         row_index: updatedSquare.row_index,

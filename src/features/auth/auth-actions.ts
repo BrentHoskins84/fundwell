@@ -3,45 +3,62 @@
 import { redirect } from 'next/navigation';
 
 import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-client';
-import { ActionResponse } from '@/types/action-response';
+import type { ActionResponse } from '@/types/action-response';
 import { getURL } from '@/utils/get-url';
+import { logger } from '@/utils/logger';
 
-export async function signInWithOAuth(provider: 'google'): Promise<ActionResponse> {
+import { getUserFriendlyErrorMessage } from './auth-error-types';
+
+export async function signInWithOAuth(
+  provider: 'google',
+  redirectTo?: string | null
+): Promise<ActionResponse> {
   const supabase = await createSupabaseServerClient();
+
+  const callbackUrl = redirectTo
+    ? `${getURL('/auth/callback')}?next=${encodeURIComponent(redirectTo)}`
+    : getURL('/auth/callback');
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider,
     options: {
-      redirectTo: getURL('/auth/callback'),
+      redirectTo: callbackUrl,
     },
   });
 
   if (error) {
-    // TODO: Replace with proper error handling
-    console.error(error);
-    return { data: null, error: error };
+    logger.error('auth', error);
+    const friendlyError = getUserFriendlyErrorMessage(error);
+    return { data: null, error: { message: friendlyError.message, code: friendlyError.type } };
   }
 
   return redirect(data.url);
 }
 
-export async function signInWithEmail(email: string): Promise<ActionResponse> {
+export async function signInWithEmail(
+  email: string,
+  redirectTo?: string | null
+): Promise<ActionResponse<{ email: string }>> {
   const supabase = await createSupabaseServerClient();
+
+  const callbackUrl = redirectTo
+    ? `${getURL('/auth/callback')}?next=${encodeURIComponent(redirectTo)}`
+    : getURL('/auth/callback');
 
   const { error } = await supabase.auth.signInWithOtp({
     email,
     options: {
-      emailRedirectTo: getURL('/auth/callback'),
+      emailRedirectTo: callbackUrl,
     },
   });
 
   if (error) {
-    // TODO: Replace with proper error handling
-    console.error(error);
-    return { data: null, error: error };
+    logger.error('auth', error);
+    const friendlyError = getUserFriendlyErrorMessage(error);
+    return { data: null, error: { message: friendlyError.message, code: friendlyError.type } };
   }
 
-  return { data: null, error: null };
+  return { data: { email }, error: null };
 }
 
 export async function signOut(): Promise<ActionResponse> {
@@ -49,10 +66,36 @@ export async function signOut(): Promise<ActionResponse> {
   const { error } = await supabase.auth.signOut();
 
   if (error) {
-    // TODO: Replace with proper error handling
-    console.error(error);
-    return { data: null, error: error };
+    logger.error('auth', error);
+    const friendlyError = getUserFriendlyErrorMessage(error);
+    return { data: null, error: { message: friendlyError.message, code: friendlyError.type } };
   }
 
   redirect('/');
+}
+
+export async function resendMagicLink(
+  email: string,
+  redirectTo?: string | null
+): Promise<ActionResponse> {
+  const supabase = await createSupabaseServerClient();
+
+  const callbackUrl = redirectTo
+    ? `${getURL('/auth/callback')}?next=${encodeURIComponent(redirectTo)}`
+    : getURL('/auth/callback');
+
+  const { error } = await supabase.auth.signInWithOtp({
+    email,
+    options: {
+      emailRedirectTo: callbackUrl,
+    },
+  });
+
+  if (error) {
+    logger.error('auth', error);
+    const friendlyError = getUserFriendlyErrorMessage(error);
+    return { data: null, error: { message: friendlyError.message, code: friendlyError.type } };
+  }
+
+  return { data: null, error: null };
 }

@@ -11,6 +11,8 @@ const siteUrl = getURL();
 export async function GET(request: NextRequest) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get('code');
+  const next = requestUrl.searchParams.get('next');
+  const redirectTo = next && next.startsWith('/') ? next : '/dashboard';
 
   if (code) {
     const supabase = await createSupabaseServerClient();
@@ -24,8 +26,8 @@ export async function GET(request: NextRequest) {
       return NextResponse.redirect(`${siteUrl}/login`);
     }
 
-    return NextResponse.redirect(`${siteUrl}/dashboard`);
+    return NextResponse.redirect(`${siteUrl}${redirectTo}`);
   }
 
-  return NextResponse.redirect(`${siteUrl}/dashboard`);
+  return NextResponse.redirect(`${siteUrl}${redirectTo}`);
 }
