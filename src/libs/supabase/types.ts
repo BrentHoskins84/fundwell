@@ -43,6 +43,11 @@ export type Database = {
           payout_q2_percent: number | null
           payout_q3_percent: number | null
           primary_color: string | null
+          prize_final_text: string | null
+          prize_q1_text: string | null
+          prize_q2_text: string | null
+          prize_q3_text: string | null
+          prize_type: Database["public"]["Enums"]["prize_type"]
           row_numbers: number[] | null
           row_team_name: string
           secondary_color: string | null
@@ -80,6 +85,11 @@ export type Database = {
           payout_q2_percent?: number | null
           payout_q3_percent?: number | null
           primary_color?: string | null
+          prize_final_text?: string | null
+          prize_q1_text?: string | null
+          prize_q2_text?: string | null
+          prize_q3_text?: string | null
+          prize_type?: Database["public"]["Enums"]["prize_type"]
           row_numbers?: number[] | null
           row_team_name: string
           secondary_color?: string | null
@@ -117,6 +127,11 @@ export type Database = {
           payout_q2_percent?: number | null
           payout_q3_percent?: number | null
           primary_color?: string | null
+          prize_final_text?: string | null
+          prize_q1_text?: string | null
+          prize_q2_text?: string | null
+          prize_q3_text?: string | null
+          prize_type?: Database["public"]["Enums"]["prize_type"]
           row_numbers?: number[] | null
           row_team_name?: string
           secondary_color?: string | null
@@ -510,6 +525,7 @@ export type Database = {
       payment_status: "available" | "pending" | "paid"
       pricing_plan_interval: "day" | "week" | "month" | "year"
       pricing_type: "one_time" | "recurring"
+      prize_type: "percentage" | "custom"
       sport_type: "football" | "baseball"
       subscription_status:
         | "trialing"
@@ -653,6 +669,7 @@ export const Constants = {
       payment_status: ["available", "pending", "paid"],
       pricing_plan_interval: ["day", "week", "month", "year"],
       pricing_type: ["one_time", "recurring"],
+      prize_type: ["percentage", "custom"],
       sport_type: ["football", "baseball"],
       subscription_status: [
         "trialing",
