@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { LogOut, Menu } from 'lucide-react';
+import { LayoutGrid, LogOut, Menu } from 'lucide-react';
 
 import { Logo } from '@/components/logo';
 import {
@@ -120,6 +120,12 @@ export function DashboardShell({ children, userEmail }: DashboardShellProps) {
                   <span className='block truncate text-sm font-normal'>{userEmail}</span>
                 </DropdownMenuLabel>
                 <DropdownMenuSeparator className='bg-zinc-700' />
+                <DropdownMenuItem asChild className='cursor-pointer text-zinc-300 focus:bg-zinc-700 focus:text-white'>
+                  <Link href='/dashboard' className='flex items-center gap-2'>
+                    <LayoutGrid className='h-4 w-4' />
+                    Dashboard
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuItem asChild className='cursor-pointer text-zinc-300 focus:bg-zinc-700 focus:text-white'>
                   <Link href='/dashboard/account'>Account</Link>
                 </DropdownMenuItem>
