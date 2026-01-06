@@ -101,6 +101,7 @@ export async function createContest(input: CreateContestInput, retryCount = 0): 
     payout_game6_percent: data.payoutGame6Percent,
     payout_game7_percent: data.payoutGame7Percent,
     hero_image_url: data.heroImageUrl || null,
+    hero_image_position: data.heroImagePosition,
     org_image_url: data.orgImageUrl || null,
     primary_color: data.primaryColor,
     secondary_color: data.secondaryColor,

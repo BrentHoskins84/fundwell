@@ -23,6 +23,7 @@ export type Database = {
           created_at: string
           deleted_at: string | null
           description: string | null
+          hero_image_position: string
           hero_image_url: string | null
           id: string
           is_public: boolean
@@ -65,6 +66,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          hero_image_position?: string
           hero_image_url?: string | null
           id?: string
           is_public?: boolean
@@ -107,6 +109,7 @@ export type Database = {
           created_at?: string
           deleted_at?: string | null
           description?: string | null
+          hero_image_position?: string
           hero_image_url?: string | null
           id?: string
           is_public?: boolean

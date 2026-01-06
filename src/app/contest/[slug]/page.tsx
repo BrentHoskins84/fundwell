@@ -82,6 +82,7 @@ export default async function ContestPage({ params }: ContestPageProps) {
     primary_color: contest.primary_color ?? '#F97316',
     secondary_color: contest.secondary_color ?? '#D97706',
     hero_image_url: contest.hero_image_url,
+    hero_image_position: contest.hero_image_position,
     org_image_url: contest.org_image_url,
     requiresPin: Boolean(accessPin),
     access_pin: isOwner ? accessPin : null,
