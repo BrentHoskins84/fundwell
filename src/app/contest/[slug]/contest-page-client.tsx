@@ -34,6 +34,7 @@ interface Contest extends ContestPrizeFields {
   primary_color: string;
   secondary_color: string;
   hero_image_url: string | null;
+  hero_image_position?: string;
   org_image_url: string | null;
   requiresPin: boolean;
   access_pin: string | null;
@@ -66,6 +67,22 @@ interface ContestPageClientProps {
 const quarterDisplayNames: Record<GameQuarter, string> = Object.fromEntries(
   FOOTBALL_QUARTER_LABELS.map((q) => [q.key, q.label])
 ) as Record<GameQuarter, string>;
+
+// Convert hero image position to CSS object-position
+function getObjectPosition(position?: string): string {
+  const positionMap: Record<string, string> = {
+    'top-left': '0% 0%',
+    'top-center': '50% 0%',
+    'top-right': '100% 0%',
+    'center-left': '0% 50%',
+    'center': '50% 50%',
+    'center-right': '100% 50%',
+    'bottom-left': '0% 100%',
+    'bottom-center': '50% 100%',
+    'bottom-right': '100% 100%',
+  };
+  return positionMap[position || 'center'] || '50% 50%';
+}
 
 export function ContestPageClient({ contest, squares, scores, hasAccess, showAds, paymentOptions }: ContestPageClientProps) {
   const router = useRouter();
@@ -251,13 +268,14 @@ export function ContestPageClient({ contest, squares, scores, hasAccess, showAds
       {/* Hero Section */}
       <div className="relative">
         {/* Hero Banner */}
-        <div className="relative h-48 w-full md:h-64">
+        <div className="relative h-64 w-full md:h-96">
           {contest.hero_image_url ? (
             <Image
               src={contest.hero_image_url}
               alt={contest.name}
               fill
               className="object-cover"
+              style={{ objectPosition: getObjectPosition(contest.hero_image_position) }}
               priority
             />
           ) : (

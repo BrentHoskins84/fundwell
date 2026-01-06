@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import Image from 'next/image';
-import { Loader2, Trash2, Upload } from 'lucide-react';
+import { HelpCircle, Loader2, Trash2, Upload } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -13,6 +13,7 @@ import { Label } from '@/components/ui/label';
 import { useToast } from '@/components/ui/use-toast';
 import { updateContest } from '@/features/contests/actions/update-contest';
 import { deleteContestImage, uploadContestImage } from '@/features/contests/actions/upload-contest-image';
+import { type HeroImagePosition,HeroPositionPicker } from '@/features/contests/components';
 import { Database } from '@/libs/supabase/types';
 import { zodResolver } from '@hookform/resolvers/zod';
 
@@ -41,9 +42,13 @@ export function BrandingSection({ contest }: BrandingSectionProps) {
   const [heroDeleting, setHeroDeleting] = useState(false);
   const [logoDeleting, setLogoDeleting] = useState(false);
   const [heroImageUrl, setHeroImageUrl] = useState(contest.hero_image_url);
+  const [heroImagePosition, setHeroImagePosition] = useState<HeroImagePosition>(
+    (contest.hero_image_position as HeroImagePosition) || 'center'
+  );
   const [logoImageUrl, setLogoImageUrl] = useState(contest.org_image_url);
   const [heroModalOpen, setHeroModalOpen] = useState(false);
   const [logoModalOpen, setLogoModalOpen] = useState(false);
+  const [positionSaving, setPositionSaving] = useState(false);
 
   const { toast } = useToast();
 
@@ -173,6 +178,36 @@ export function BrandingSection({ contest }: BrandingSectionProps) {
     }
   };
 
+  const handlePositionChange = async (position: HeroImagePosition) => {
+    setPositionSaving(true);
+    try {
+      const result = await updateContest(contest.id, { hero_image_position: position });
+
+      if (result?.error) {
+        toast({
+          variant: 'destructive',
+          title: 'Error',
+          description: result.error.message,
+        });
+        return;
+      }
+
+      setHeroImagePosition(position);
+      toast({
+        title: 'Position updated',
+        description: 'Hero image position has been saved.',
+      });
+    } catch {
+      toast({
+        variant: 'destructive',
+        title: 'Error',
+        description: 'An unexpected error occurred.',
+      });
+    } finally {
+      setPositionSaving(false);
+    }
+  };
+
   const handleLogoDelete = async () => {
     if (!logoImageUrl) return;
 
@@ -278,6 +313,32 @@ export function BrandingSection({ contest }: BrandingSectionProps) {
                 </Button>
               )}
             </div>
+
+            {/* Hero Image Position Picker */}
+            {heroImageUrl && (
+              <div className="space-y-2">
+                <div>
+                  <div className="flex items-center gap-2">
+                    <Label className="text-base">Image Focus Point</Label>
+                    <div className="group relative">
+                      <HelpCircle className="h-4 w-4 cursor-help text-zinc-500 transition-colors hover:text-zinc-400" />
+                      <div className="invisible absolute bottom-full left-1/2 mb-2 w-64 -translate-x-1/2 rounded-lg border border-zinc-700 bg-zinc-800 px-3 py-2 text-xs text-zinc-300 shadow-lg opacity-0 transition-all group-hover:visible group-hover:opacity-100">
+                        Set the focal point of your hero image. When the image is cropped on different screen sizes, this point will stay visible. For example, if your image has a person on the left, select a left position to keep them in frame.
+                        <div className="absolute left-1/2 top-full -translate-x-1/2 border-4 border-transparent border-t-zinc-800" />
+                      </div>
+                    </div>
+                  </div>
+                  <p className="text-sm text-zinc-400">
+                    Choose which part of the image stays visible when cropped.
+                  </p>
+                </div>
+                <HeroPositionPicker
+                  value={heroImagePosition}
+                  onChange={handlePositionChange}
+                  disabled={positionSaving}
+                />
+              </div>
+            )}
           </div>
 
           {/* Organization Logo */}
