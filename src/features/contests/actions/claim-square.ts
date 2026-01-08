@@ -64,7 +64,7 @@ export async function claimSquare(
   // Fetch contest to check status and maxSquaresPerPerson
   const { data: contest, error: contestError } = await supabase
     .from('contests')
-    .select('id, status, max_squares_per_person, name, slug, row_team_name, col_team_name, square_price')
+    .select('id, status, max_squares_per_person, name, slug, row_team_name, col_team_name, square_price, players')
     .eq('id', contestId)
     .single();
 
@@ -110,21 +110,13 @@ export async function claimSquare(
 
   // Resolve referredBy from slug if provided
   let referredBy: string | undefined;
-  if (referredBySlug) {
-    const { data: contestPlayers } = await supabase
-      .from('contests')
-      .select('players')
-      .eq('id', contestId)
-      .single();
-
-    if (contestPlayers?.players) {
-      const players = contestPlayers.players as unknown as Player[];
-      const matchedPlayer = players.find(
-        (p) => p.slug.toLowerCase() === referredBySlug.toLowerCase()
-      );
-      if (matchedPlayer) {
-        referredBy = matchedPlayer.name;
-      }
+  if (referredBySlug && contest.players) {
+    const players = contest.players as unknown as Player[];
+    const matchedPlayer = players.find(
+      (p) => p.slug.toLowerCase() === referredBySlug.toLowerCase()
+    );
+    if (matchedPlayer) {
+      referredBy = matchedPlayer.name;
     }
   }
 

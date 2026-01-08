@@ -2,7 +2,7 @@
 
 import { useState, useTransition } from 'react';
 import { Copy, Loader2, Plus, Trash2 } from 'lucide-react';
-import { Controller, useForm } from 'react-hook-form';
+import { useForm } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';

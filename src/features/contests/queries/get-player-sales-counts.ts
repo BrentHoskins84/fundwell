@@ -4,7 +4,8 @@ import { createSupabaseServerClient } from '@/libs/supabase/supabase-server-clie
 import { logger } from '@/utils/logger';
 
 /**
- * Get count of squares sold per player (referred_by) for a contest
+ * Get count of squares sold per player (referred_by) for a contest.
+ * Uses JS aggregation - performant since max 100 squares per contest.
  */
 export async function getPlayerSalesCounts(contestId: string): Promise<Record<string, number>> {
   const supabase = await createSupabaseServerClient();
