@@ -14,6 +14,7 @@ export const claimSquareSchema = z.object({
     .min(1, { message: 'Email is required' })
     .email({ message: 'Please enter a valid email' }),
   venmoHandle: z.string().max(32, { message: 'Handle is too long' }).optional(),
+  referredBySlug: z.string().max(50).optional(),
 });
 
 export type ClaimSquareFormData = z.infer<typeof claimSquareSchema>;
