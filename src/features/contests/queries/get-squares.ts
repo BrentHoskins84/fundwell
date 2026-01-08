@@ -9,7 +9,7 @@ export async function getSquaresForContest(contestId: string): Promise<Square[]>
 
   const { data, error } = await supabase
     .from('squares')
-    .select('id, row_index, col_index, payment_status, claimant_first_name, claimant_last_name')
+    .select('id, row_index, col_index, payment_status, claimant_first_name, claimant_last_name, referred_by')
     .eq('contest_id', contestId)
     .order('row_index')
     .order('col_index');

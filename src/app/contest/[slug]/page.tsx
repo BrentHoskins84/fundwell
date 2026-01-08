@@ -106,6 +106,9 @@ export default async function ContestPage({ params }: ContestPageProps) {
     prize_q2_text: contest.prize_q2_text,
     prize_q3_text: contest.prize_q3_text,
     prize_final_text: contest.prize_final_text,
+    // Player tracking
+    enable_player_tracking: contest.enable_player_tracking,
+    players: contest.players,
   };
 
   return (
