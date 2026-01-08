@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { ArrowLeft, Eye, Settings, Users } from 'lucide-react';
+import { ArrowLeft, Eye, Settings, UserPlus, Users } from 'lucide-react';
 
 import { AdPlaceholder } from '@/components/shared';
 import { Badge } from '@/components/ui/badge';
@@ -294,6 +294,15 @@ export default async function ContestDetailPage({ params }: ContestDetailPagePro
                   Manage Participants
                 </Link>
               </Button>
+
+              {contest.enable_player_tracking && (
+                <Button variant="default" className="w-full justify-start" asChild>
+                  <Link href={`/dashboard/${contestId}/team-members`}>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Manage Team Members
+                  </Link>
+                </Button>
+              )}
             </div>
           </CardContent>
         </Card>
